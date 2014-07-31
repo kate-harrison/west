@@ -18,6 +18,7 @@ include/*
 *.pcl
 *.kml
 *.pdf
+*.pyc
 
 #Project files
 data/*
