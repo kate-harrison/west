@@ -1,0 +1,35 @@
+#OS junk files
+[Tt]humbs.db
+*.DS_Store
+
+#IntelliJ files
+.Python
+*.iml
+.idea/*
+
+#virtualenv files
+__pycache__/*
+lib/*
+bin/*
+include/*
+
+#Misc files
+*.swp
+*.pcl
+*.kml
+*.pdf
+
+#Project files
+data/*
+old/*
+old_py/*
+output/*
+profiles/*
+test/*
+test*.py
+with_doc_inherit/*
+documentation/*
+propagation_models/fcurves/old/*
+*.so
+*.exe
+*.bat
