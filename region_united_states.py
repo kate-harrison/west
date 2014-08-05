@@ -3,8 +3,8 @@ from region import Region
 #from boundary import BoundaryContinentalUnitedStates
 import boundary
 import protected_entities_tv_stations
-import protected_entities
 import protected_entities_plmrs
+import protected_entities_radio_astronomy_sites
 
 class RegionUnitedStates(Region):
     """US region"""
@@ -32,6 +32,8 @@ class RegionUnitedStates(Region):
         self.protected_entities[protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
             protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self.simulation, self)
 
+        self.protected_entities[protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates] = \
+            protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates(self.simulation, self)
 
     # @doc_inherit
     def get_frequency_bounds(self, channel):

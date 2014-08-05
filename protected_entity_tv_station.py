@@ -4,6 +4,8 @@ import helpers
 class ProtectedEntityTVStation(ProtectedEntity):
     """TV station"""
 
+    required_properties = ["latitude", "longitude", "channel", "ERP_Watts", "HAAT_meters", "tx_type"]
+
     def __init__(self, container, region, latitude, longitude, channel, ERP_Watts, HAAT_meters, tx_type):
         super(ProtectedEntityTVStation, self).__init__(region, container, latitude, longitude)
 
@@ -21,6 +23,8 @@ class ProtectedEntityTVStation(ProtectedEntity):
         # Optional information that can be added later
         self.facility_id = None
         self.callsign = None
+
+        self.log_error_if_necessary_data_missing()
 
     def to_string(self):
         output = ""

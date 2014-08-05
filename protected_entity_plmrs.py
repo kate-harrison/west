@@ -12,6 +12,8 @@ class ProtectedEntityPLMRS(ProtectedEntity):
         self._is_metro = is_metro
         self._description = description
 
+        self.log_error_if_necessary_data_missing()
+
     def get_location(self):
         return (self.latitude, self.longitude)
 

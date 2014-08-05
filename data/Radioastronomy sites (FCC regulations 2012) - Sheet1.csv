@@ -1,0 +1,15 @@
+Name,Latitude (degree),Latitude (minute),Latitude (second),Latitude (direction),Longitude (degree),Longitude (minute),Longitude (second),Longitude (direction),Is point,Latitude deviation (decimal degrees),Longitude deviation (decimal degrees)
+Allen Telescope Array,40,49,4,N,121,28,24,W,TRUE,0,0
+Arecibo Observatory,18,20,37,N,66,45,11,W,TRUE,0,0
+Green Bank Telescope (GBT),38,25,59,N,79,50,23,W,TRUE,0,0
+"Pie Town, NM (VLBA)",34,18,4,N,108,7,9,W,TRUE,0,0
+"Kitt Peak, AZ (VLBA)",31,57,23,N,111,36,45,W,TRUE,0,0
+"Los Alamos, NM (VLBA)",35,46,30,N,106,14,44,W,TRUE,0,0
+"Ft. Davis, TX (VLBA)",30,38,6,N,103,56,41,W,TRUE,0,0
+"N. Liberty, IA (VLBA)",41,46,17,N,91,34,27,W,TRUE,0,0
+"Brewster, WA (VLBA)",48,7,52,N,119,41,0,W,TRUE,0,0
+"Owens Valley, CA (VLBA)",37,13,54,N,118,16,37,W,TRUE,0,0
+"St. Croix, VI (VLBA)",17,45,24,N,64,35,1,W,TRUE,0,0
+"Hancock, NH (VLBA)",42,56,1,N,71,59,12,W,TRUE,0,0
+"Mauna Kea, HI (VLBA)",19,48,5,N,155,27,20,W,TRUE,0,0
+Very Large Array (VLA),34,6,39,N,107,36,31,W,FALSE,0.276,0.395

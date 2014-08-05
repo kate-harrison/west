@@ -9,6 +9,8 @@ class ProtectedEntity(object):
     """Generic protected entity."""
     __metaclass__ = ABCMeta
 
+    required_properties = ["latitude", "longitude"]
+
     def __init__(self, region, container, latitude, longitude):
         self.log = getModuleLogger(self)
         self.region = region
@@ -22,6 +24,19 @@ class ProtectedEntity(object):
         self.longitude = longitude
 
         self._create_bounding_box()
+
+    def log_error_if_necessary_data_missing(self):
+        """Checks for the existence and initialization of all required
+        properties. Logs errors for all that are missing.
+
+        Note: this only checks for the most essential data."""
+        for property in self.required_properties:
+            if not hasattr(self, property):
+                self.log.error("Missing required property: ", property)
+
+            if getattr(self, property) is None:
+                self.log.error("Required property %s has value None" % property)
+
 
     def get_location(self):
         """
