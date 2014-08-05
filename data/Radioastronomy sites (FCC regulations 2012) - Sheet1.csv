@@ -1,4 +1,6 @@
 Name,Latitude (degree),Latitude (minute),Latitude (second),Latitude (direction),Longitude (degree),Longitude (minute),Longitude (second),Longitude (direction),Is point,Latitude deviation (decimal degrees),Longitude deviation (decimal degrees)
+"Naval Research Observatory (Sugar Grove, WV)",38,30,58,N,79,16,48,W,TRUE,0,0
+Table Mountain Radio Receiving Zone,40,8,2,N,105,14,40,W,TRUE,0,0
 Allen Telescope Array,40,49,4,N,121,28,24,W,TRUE,0,0
 Arecibo Observatory,18,20,37,N,66,45,11,W,TRUE,0,0
 Green Bank Telescope (GBT),38,25,59,N,79,50,23,W,TRUE,0,0

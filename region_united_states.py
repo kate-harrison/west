@@ -32,7 +32,7 @@ class RegionUnitedStates(Region):
         self.protected_entities[protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
             protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self.simulation, self)
 
-        self.protected_entities[protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates] = \
+        self.protected_entities[protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySites] = \
             protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates(self.simulation, self)
 
     # @doc_inherit

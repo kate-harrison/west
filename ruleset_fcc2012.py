@@ -1,6 +1,7 @@
 from protected_entity_tv_station import ProtectedEntityTVStation
 from protected_entities_tv_stations import ProtectedEntitiesTVStations
 from protected_entities_plmrs import ProtectedEntitiesPLMRS
+from protected_entities_radio_astronomy_sites import ProtectedEntitiesRadioAstronomySites
 from propagation_model_fcurves import PropagationModelFcurves
 import helpers
 from geopy.distance import vincenty
@@ -272,6 +273,40 @@ class RulesetFcc2012(Ruleset):
 #   END PLMRS PROTECTION CALCULATIONS
 ####
 
+####
+#   RADIOASTRONOMY PROTECTION CALCULATIONS
+####
+
+    def get_radioastronomy_site_exclusion_radius_km(self):
+        """
+        The radioastronomy separation distance mandated by the FCC is defined in section 15.712(h) of the FCC TVWS
+        regulations. We include it as a parameter here to allow for easy modification.
+
+        :return: exclusion radius for radioastronomy sites in kilometers
+        :rtype: float
+        """
+        return 2.4
+
+    def radioastronomy_site_is_protected(self, ras_site, device_location):
+        if not ras_site.location_in_bounding_box(device_location):
+            return False
+
+        if ras_site.is_point():
+            actual_distance_km = vincenty(ras_site.get_location(), device_location).kilometers
+            return actual_distance_km <= self.get_radioastronomy_site_exclusion_radius_km()
+        else:
+            return ras_site.location_in_protected_polygon(device_location)
+
+    def location_is_whitespace_radioastronomy_only(self, region, location):
+        ras_container = region.get_protected_entities_of_type(ProtectedEntitiesRadioAstronomySites)
+        for ras_site in ras_container.list_of_entities():
+            if self.radioastronomy_site_is_protected(ras_site, location):
+                return False
+        return True
+
+####
+#   END RADIOASTRONOMY PROTECTION CALCULATIONS
+####
 
 ####
 #   GENERAL WHITESPACE CALCULATIONS
@@ -339,6 +374,7 @@ class RulesetFcc2012(Ruleset):
             # Initialize to True so that all points will be evaluated
             is_whitespace_grid.reset_all_values(True)
 
+        self.apply_radioastronomy_exclusions_to_map(region, is_whitespace_grid)
         self.apply_plmrs_exclusions_to_map(region, is_whitespace_grid, channel)
         self.apply_tv_exclusions_to_map(region, is_whitespace_grid, channel, device)
 
@@ -369,6 +405,7 @@ class RulesetFcc2012(Ruleset):
                 # Skip if not whitespace
                 if not is_whitespace_grid.mutable_matrix[lat_idx, lon_idx]:
                     continue
+
                 is_whitespace_grid.mutable_matrix[lat_idx, lon_idx] = \
                     self.location_is_whitespace_tv_stations_only(region, (lat, lon), channel, device.get_haat())
 
@@ -395,8 +432,33 @@ class RulesetFcc2012(Ruleset):
                 # Skip if not whitespace
                 if not is_whitespace_grid.mutable_matrix[lat_idx, lon_idx]:
                     continue
+
                 is_whitespace_grid.mutable_matrix[lat_idx, lon_idx] = \
                     self.location_is_whitespace_plmrs_only(region, (lat, lon), channel)
+
+    def apply_radioastronomy_exclusions_to_map(self, region, is_whitespace_grid):
+        """
+        Applies radioastronomy exclusions to the given map. Entries will be marked `True` if they are whitespace and
+        `False` otherwise.
+
+        .. note:: Any entries which are already `False` will not be evaluated.
+
+        :param region: region containing the protected entities
+        :type region: :class:`region.Region` object
+        :param is_whitespace_grid: grid to be filled with the output
+        :type is_whitespace_grid: :class:`data_storage.DataPointGrid` object
+        :return: None
+        """
+        self.log.info("Applying radioastronomy exclusions")
+        for (lat_idx, lat) in enumerate(is_whitespace_grid.latitudes):
+            for (lon_idx, lon) in enumerate(is_whitespace_grid.longitudes):
+                # Skip if not whitespace
+                if not is_whitespace_grid.mutable_matrix[lat_idx, lon_idx]:
+                    continue
+
+                is_whitespace_grid.mutable_matrix[lat_idx, lon_idx] = \
+                    self.location_is_whitespace_radioastronomy_only(region, (lat, lon))
+
 ####
 #   END GENERAL WHITESPACE CALCULATIONS
 ####

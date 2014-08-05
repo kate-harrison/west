@@ -3,6 +3,10 @@ from shapely.geometry import Polygon
 
 
 class ProtectedEntityRadioAstronomySite(ProtectedEntity):
+    """
+    Radioastronomy site.
+    """
+    # TODO: do RAS rectangles need to be protected within the rectangle or within 2.4 km of the rectangle?
 
     required_properties = ["latitude", "longitude", "channel", "_is_point"]
 
@@ -120,8 +124,15 @@ class ProtectedEntityRadioAstronomySite(ProtectedEntity):
                 if lon > bb['max_lon']:
                     bb['max_lon'] = lon
 
-            print "Updated bounding box for %s" % self.name
-            print "Old box: ", self.get_bounding_box()
-            print "New box: ", bb
-
             self.protected_bounding_box = bb
+
+    def location_in_protected_polygon(self, device_location):
+        if self.is_point():
+            return False
+        else:
+            (lat, lon) = device_location
+            return (
+                (self.latitude - self._latitude_deviation <= lat <= self.latitude + self._latitude_deviation)
+                and
+                (self.longitude - self._longitude_deviation <= lon <= self.longitude + self._longitude_deviation)
+            )

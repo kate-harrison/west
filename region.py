@@ -70,7 +70,7 @@ class Region(object):
         else:
             self.log.info("Using fallthrough protected entity for type %s" %
                           entity_type)
-            return ProtectedEntitiesDummy()
+            return ProtectedEntitiesDummy(None, None)
 
     @abstractmethod
     def get_tvws_channel_list(self):
