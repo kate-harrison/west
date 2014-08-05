@@ -95,8 +95,7 @@ class ProtectedEntities(object):
         This method returns the maximum protected radius that could be apply to any entity in this collection. This
         value is used for creating a bounding box which later speeds up computations.
 
-        .. warning:: Set to a larger value than expected to be needed for any ruleset! Otherwise entries may be
-        erroneously skipped.
+        .. warning:: Set to a larger value than expected to be needed for any ruleset! Otherwise entries may be erroneously skipped.
         """
         return
 

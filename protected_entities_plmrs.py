@@ -23,7 +23,13 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
                "http://www.google.com/get/spectrumdatabase/data/]"
 
     def get_max_protected_radius_km(self):
-        return 150
+        """
+        See :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km` for more details.
+
+        :return: 150.0
+        :rtype: float
+        """
+        return 150.0
 
     # {'rcamsl_meters': '51.8', 'application_id': '2641127', 'uid': 'WQAS562', 'erp_watts': '250000.000',
     # 'site_number': '2', 'parent_latitude': '', 'entity_type': 'PLCMRS', 'keyhole_radius_meters': '',
@@ -35,7 +41,7 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
 
     # @doc_inherit
     def _load_entities(self):
-        self.log.debug("Loading PLMRS data from %s (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading PLMRS data from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
 
         with open(self.source_filename(), 'r') as f:
             plmrs_csv = csv.DictReader(f)

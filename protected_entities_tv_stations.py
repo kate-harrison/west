@@ -105,22 +105,25 @@ class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
         return ['DD']
 
     def get_max_protected_radius_km(self):
-        return 200
+        """
+        See :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km` for more details.
+
+        :return: 200.0
+        :rtype: float
+        """
+        return 200.0
 
 
 class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStationsUnitedStates):
     """This class contains TV stations as read from the Google data."""
 
-    # @doc_inherit
     def source_filename(self):
         return os.path.join("data", "Google data", "tv_us.csv")
 
-    # @doc_inherit
     def source_name(self):
         return "Google TVWS database download [" \
                "http://www.google.com/get/spectrumdatabase/data/]"
 
-    # @doc_inherit
     def _load_entities(self):
         """Example entry from Google's data:
 
@@ -136,7 +139,7 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
         'parent_callsign': ''}
         """
 
-        self.log.debug("Loading TV stations from %s (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
 
         with open(self.source_filename(), 'r') as f:
             station_csv = csv.DictReader(f)

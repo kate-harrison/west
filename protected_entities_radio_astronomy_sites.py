@@ -10,19 +10,28 @@ class ProtectedEntitiesRadioAstronomySites(ProtectedEntities):
 
 
 class ProtectedEntitiesRadioAstronomySitesUnitedStates(ProtectedEntitiesRadioAstronomySites):
+    """
+    Radioastronomy sites for the United States. Defined in section 15.712(h) of the FCC regulations.
+    """
     def source_filename(self):
         return os.path.join("data", "Radioastronomy sites (FCC regulations 2012) - Sheet1.csv")
 
     def source_name(self):
-        return "FCC 2012 regulations: section 15.712(h)(3)"
+        return "FCC 2012 regulations: section 15.712(h)"
 
     def get_max_protected_radius_km(self):
-        return 10
+        """
+        See :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km` for more details.
+
+        :return: 10.0
+        :rtype: float
+        """
+        return 10.0
 
     def _load_entities(self):
         """Load the protected entities."""
 
-        self.log.debug("Loading radio astronomy sites from %s (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading radio astronomy sites from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
 
         def str2bool(v):
             return v.lower() in ("yes", "true", "t", "1")
