@@ -17,6 +17,10 @@ groups = [("Propagation models", "propagation_model"), ("Protected entities", "p
 
 test_suffix = "test.py"
 
+inheritance_warning = ".. warning:: Note that the common interface is defined by the base class. Any public " + \
+                      "functions implemented in derived classes are not guaranteed to exist in any other classes. " + \
+                      "Inherited functions (e.g. the interface) are not shown in documentation of derived classes."
+
 modules = []
 # ==========================================================
 
@@ -40,6 +44,8 @@ Heritage
 ========
 .. inheritance-diagram:: %s
 
+%s
+
 Members
 =======
 .. automodule:: %s
@@ -50,7 +56,7 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`""" % (overline, module_name, overline, module_name, module_name)
+* :ref:`search`""" % (overline, module_name, overline, module_name, inheritance_warning, module_name)
 
     with open(os.path.join(rst_directory, module_name + ".rst"), "w") as f:
         f.write(output)
@@ -90,9 +96,11 @@ Links point to the module's individual page.
 %s
 %s
 
+%s
+
 .. automodule:: %s
    :members:
-""" % (module_name, underline, module_name)
+""" % (module_name, underline, inheritance_warning, module_name)
 
     output += """
 Indices and tables
