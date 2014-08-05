@@ -1,22 +1,12 @@
 from protected_entity import ProtectedEntity
-from protected_entities import ProtectedEntities
 import helpers
-from geopy.distance import VincentyDistance
-from geopy import Point
-# from doc_inherit import doc_inherit
 
 class ProtectedEntityTVStation(ProtectedEntity):
     """TV station"""
 
     def __init__(self, container, region, latitude, longitude, channel, ERP_Watts, HAAT_meters, tx_type):
-        super(ProtectedEntityTVStation, self).__init__(region)
+        super(ProtectedEntityTVStation, self).__init__(region, container, latitude, longitude)
 
-        self.container = container
-        if not isinstance(container, ProtectedEntities):
-            # TODO: raise an exception?
-            self.log.error("Container is not a ProtectedEntities instance: got %s instead." % container.__class__.__name__)
-        self.latitude = latitude
-        self.longitude = longitude
         self.channel = channel
         self.ERP_Watts = ERP_Watts
         self.HAAT_meters = HAAT_meters
@@ -31,10 +21,6 @@ class ProtectedEntityTVStation(ProtectedEntity):
         # Optional information that can be added later
         self.facility_id = None
         self.callsign = None
-
-        self._create_bounding_box()
-
-        self.log_error_if_necessary_data_missing()
 
     def to_string(self):
         output = ""

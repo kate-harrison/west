@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from custom_logging import getModuleLogger
 from geopy.distance import VincentyDistance
+from protected_entities import ProtectedEntities
 from geopy import Point
 
 
@@ -8,25 +9,19 @@ class ProtectedEntity(object):
     """Generic protected entity."""
     __metaclass__ = ABCMeta
 
-    required_properties = ["latitude", "longitude"]
-
-    def __init__(self, region):
+    def __init__(self, region, container, latitude, longitude):
         self.log = getModuleLogger(self)
         self.region = region
 
+        self.container = container
+        if not isinstance(container, ProtectedEntities):
+            # TODO: raise an exception?
+            self.log.error("Container is not a ProtectedEntities instance: got %s instead." % container.__class__.__name__)
 
-    def log_error_if_necessary_data_missing(self):
-        """Checks for the existence and initialization of all required
-        properties. Logs errors for all that are missing.
+        self.latitude = latitude
+        self.longitude = longitude
 
-        Note: this only checks for the most essential data."""
-        for property in self.required_properties:
-            if not hasattr(self, property):
-                self.log.error("Missing required property: ", property)
-
-            if getattr(self, property) is None:
-                self.log.error("Required property %s has value None" % property)
-
+        self._create_bounding_box()
 
     def get_location(self):
         """

@@ -6,19 +6,11 @@ class ProtectedEntityPLMRS(ProtectedEntity):
     required_properties = ["latitude", "longitude", "channel", "is_metro"]
 
     def __init__(self, container, region, latitude, longitude, channel, is_metro, description=None):
-        super(ProtectedEntityPLMRS, self).__init__(region)
+        super(ProtectedEntityPLMRS, self).__init__(region, container, latitude, longitude)
 
-        self.container = container
-        if not isinstance(container, ProtectedEntities):
-            # TODO: raise an exception?
-            self.log.error("Container is not a ProtectedEntities instance: got %s instead." % container.__class__.__name__)
-        self.latitude = latitude
-        self.longitude = longitude
         self.channel = channel
         self._is_metro = is_metro
         self._description = description
-
-        self._create_bounding_box()
 
     def get_location(self):
         return (self.latitude, self.longitude)
