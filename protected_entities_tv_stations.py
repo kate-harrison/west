@@ -88,14 +88,6 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
         print("There are %d total towers" % num_towers)
         print(helpers.horizontal_separator)
 
-    @abstractmethod
-    def get_max_tv_protected_radius_km(self):
-        """
-        TODO: DOCUMENT ME
-        :return:
-        """
-        pass
-
 
 
 class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
@@ -112,7 +104,7 @@ class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
     def ignored_tv_types(self):
         return ['DD']
 
-    def get_max_tv_protected_radius_km(self):
+    def get_max_protected_radius_km(self):
         return 200
 
 

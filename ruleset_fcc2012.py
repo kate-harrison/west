@@ -215,8 +215,13 @@ class RulesetFcc2012(Ruleset):
         """
         Determines if a particular PLMRS entity is protected at the given location and on the specified channel.
 
+        .. warning:: Uses the PLMRS entity's bounding box (whose dimensions are set in
+         :class:`protected_entities_plmrs.ProtectedEntitiesPLMRS`) to speed up computations. If these
+         dimensions are too small, PLMRS entities will be erroneously excluded from this computation.
+
+
         :param plmrs_entry: the PLMRS entity to be protected
-        :type plmrs_entry: :class:`protected_entity.ProtectedEntityPLMRS` object
+        :type plmrs_entry: :class:`protected_entity_plmrs.ProtectedEntityPLMRS` object
         :param location: (latitude, longitude)
         :type location: tuple of floats
         :param device_channel: channel to be tested for whitespace
@@ -234,6 +239,9 @@ class RulesetFcc2012(Ruleset):
         # We know it's not protected if it's neither cochannel nor in a first-adjacent channel
         if not is_cochannel and not helpers.channels_are_adjacent_in_frequency(region, plmrs_channel,
                                                                                device_channel):
+            return False
+
+        if not plmrs_entry.location_in_bounding_box(location):
             return False
 
         actual_distance_km = vincenty(plmrs_entry.get_location(), location).kilometers
@@ -353,8 +361,10 @@ class RulesetFcc2012(Ruleset):
         :type device: :class:`device.Device` object
         :return: None
         """
+        self.log.info("Applying TV exclusions")
         for (lat_idx, lat) in enumerate(is_whitespace_grid.latitudes):
-            print "Latitude number: %d" % lat_idx
+            if lat_idx % 10 == 0:
+                print "Latitude number: %d" % lat_idx
             for (lon_idx, lon) in enumerate(is_whitespace_grid.longitudes):
                 # Skip if not whitespace
                 if not is_whitespace_grid.mutable_matrix[lat_idx, lon_idx]:
@@ -377,9 +387,10 @@ class RulesetFcc2012(Ruleset):
         :type channel: int
         :return: None
         """
-
+        self.log.info("Applying PLMRS exclusions")
         for (lat_idx, lat) in enumerate(is_whitespace_grid.latitudes):
-            print "Latitude number: %d" % lat_idx
+            if lat_idx % 10 == 0:
+                print "Latitude number: %d" % lat_idx
             for (lon_idx, lon) in enumerate(is_whitespace_grid.longitudes):
                 # Skip if not whitespace
                 if not is_whitespace_grid.mutable_matrix[lat_idx, lon_idx]:

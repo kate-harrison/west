@@ -89,22 +89,32 @@ class ProtectedEntities(object):
 
             return kml
 
+    @abstractmethod
+    def get_max_protected_radius_km(self):
+        """
+        This method returns the maximum protected radius that could be apply to any entity in this collection. This
+        value is used for creating a bounding box which later speeds up computations.
+
+        .. warning:: Set to a larger value than expected to be needed for any ruleset! Otherwise entries may be
+        erroneously skipped.
+        """
+        return
+
 
 class ProtectedEntitiesDummy(ProtectedEntities):
     """Dummy protected entities (passthrough)."""
 
-    # @doc_inherit
     def _load_entities(self):
         pass
 
-    # @doc_inherit
     def source_filename(self):
         return None
 
-    # @doc_inherit
     def source_name(self):
         return "None"
 
-    # @doc_inherit
     def list_of_entities(self):
         return []
+
+    def get_max_protected_radius_km(self):
+        return 0

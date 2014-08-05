@@ -82,37 +82,6 @@ class ProtectedEntityTVStation(ProtectedEntity):
     def is_adjacent_channel(self, channel):
         return helpers.channels_are_adjacent_in_frequency(self.container.simulation.get_mutable_region(), self.channel, channel)
 
-    def _create_bounding_box(self):
-        bb = {'min_lat': float('inf'),
-              'max_lat': -float('inf'),
-              'min_lon': float('inf'),
-              'max_lon': -float('inf')
-        }
-
-        location = Point(self.latitude, self.longitude)
-        for bearing in [0,90,180,270,360]:
-            # (lat,lon) = helpers.km_to_latlong(self.get_location(), self.container.get_max_tv_protected_radius_km(), direction)
-            destination = VincentyDistance(kilometers=self.container.get_max_tv_protected_radius_km()).destination(location, bearing)
-            lat, lon = destination.latitude, destination.longitude
-            if lat < bb['min_lat']:
-                bb['min_lat'] = lat
-            if lat > bb['max_lat']:
-                bb['max_lat'] = lat
-            if lon < bb['min_lon']:
-                bb['min_lon'] = lon
-            if lon > bb['max_lon']:
-                bb['max_lon'] = lon
-
-        self.protected_bounding_box = bb
-
-    def get_bounding_box(self):
-        return self.protected_bounding_box
-
-    def location_in_bounding_box(self, location):
-        (lat, lon) = location
-        bb = self.get_bounding_box()
-        return (bb['min_lat'] <= lat <= bb['max_lat']) and (bb['min_lon'] <= lon <= bb['max_lon'])
-
     def add_to_kml(self, kml):
         point = kml.newpoint()
         point.name = str(self.callsign)

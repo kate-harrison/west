@@ -1,14 +1,13 @@
 import os
 import csv
-import protected_entity
-# from doc_inherit import doc_inherit
+from protected_entity_plmrs import ProtectedEntityPLMRS
 from protected_entities import ProtectedEntities
 
 class ProtectedEntitiesPLMRS(ProtectedEntities):
     """
     Intermediate class
     """
-    pass
+
 
 
 class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
@@ -16,15 +15,15 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
     PLMRS exclusions with data from Google
     """
 
-    # @doc_inherit
     def source_filename(self):
         return os.path.join("data", "Google data", "plcmrs.csv")
 
-    # @doc_inherit
     def source_name(self):
         return "Google TVWS database download [" \
                "http://www.google.com/get/spectrumdatabase/data/]"
 
+    def get_max_protected_radius_km(self):
+        return 150
 
     # {'rcamsl_meters': '51.8', 'application_id': '2641127', 'uid': 'WQAS562', 'erp_watts': '250000.000',
     # 'site_number': '2', 'parent_latitude': '', 'entity_type': 'PLCMRS', 'keyhole_radius_meters': '',
@@ -51,8 +50,6 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
 
                 description = plmrs_entry['uid']
 
-                new_plmrs_entry = protected_entity.ProtectedEntityPLMRS(self, self.get_mutable_region(), latitude,
-                                                                        longitude, channel, is_metro, description)
-
-
+                new_plmrs_entry = ProtectedEntityPLMRS(self, self.get_mutable_region(), latitude, longitude, channel,
+                                                       is_metro, description)
                 self._add_entity(new_plmrs_entry)
