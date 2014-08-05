@@ -1,13 +1,15 @@
 from protected_entity import ProtectedEntity
 from protected_entities import ProtectedEntities
 import helpers
+from geopy.distance import VincentyDistance
+from geopy import Point
 # from doc_inherit import doc_inherit
 
 class ProtectedEntityTVStation(ProtectedEntity):
     """TV station"""
 
-    def __init__(self, container, latitude, longitude, channel, ERP_Watts, HAAT_meters, tx_type):
-        super(ProtectedEntityTVStation, self).__init__()
+    def __init__(self, container, region, latitude, longitude, channel, ERP_Watts, HAAT_meters, tx_type):
+        super(ProtectedEntityTVStation, self).__init__(region)
 
         self.container = container
         if not isinstance(container, ProtectedEntities):
@@ -44,10 +46,6 @@ class ProtectedEntityTVStation(ProtectedEntity):
 
         return output
 
-    def get_pathloss_coefficient(self, args, kwargs):
-        """Calls the simulation's pathloss model. Returns the pathloss coefficient."""
-        self.simulation.pathloss_model.get_pathloss_coefficient(args, kwargs)
-
     def add_facility_id(self, facility_id):
         self.facility_id = facility_id
 
@@ -57,10 +55,6 @@ class ProtectedEntityTVStation(ProtectedEntity):
     def get_location(self):
         return (self.latitude, self.longitude)
 
-    def get_center_frequency(self):
-        return self.simulation.configuration.get_center_frequency(self.channel)
-
-    # @doc_inherit
     def get_channel(self):
         return self.channel
 
@@ -95,8 +89,11 @@ class ProtectedEntityTVStation(ProtectedEntity):
               'max_lon': -float('inf')
         }
 
-        for dir in [0,90,180,270,360]:
-            (lat,lon) = helpers.km_to_latlong(self.get_location(), self.container.get_max_tv_protected_radius_km(), dir)
+        location = Point(self.latitude, self.longitude)
+        for bearing in [0,90,180,270,360]:
+            # (lat,lon) = helpers.km_to_latlong(self.get_location(), self.container.get_max_tv_protected_radius_km(), direction)
+            destination = VincentyDistance(kilometers=self.container.get_max_tv_protected_radius_km()).destination(location, bearing)
+            lat, lon = destination.latitude, destination.longitude
             if lat < bb['min_lat']:
                 bb['min_lat'] = lat
             if lat > bb['max_lat']:
@@ -111,6 +108,10 @@ class ProtectedEntityTVStation(ProtectedEntity):
     def get_bounding_box(self):
         return self.protected_bounding_box
 
+    def location_in_bounding_box(self, location):
+        (lat, lon) = location
+        bb = self.get_bounding_box()
+        return (bb['min_lat'] <= lat <= bb['max_lat']) and (bb['min_lon'] <= lon <= bb['max_lon'])
 
     def add_to_kml(self, kml):
         point = kml.newpoint()

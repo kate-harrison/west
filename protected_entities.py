@@ -7,9 +7,11 @@ class ProtectedEntities(object):
     """Protected entities: a collection of protected entities."""
     __metaclass__ = ABCMeta
 
-    def __init__(self, simulation):
-        self.simulation = simulation
+    def __init__(self, simulation, region):
         self.log = getModuleLogger(self)
+
+        self.simulation = simulation
+        self.region = region
 
         self._reset_entities()
 
@@ -23,6 +25,13 @@ class ProtectedEntities(object):
     def _load_entities(self):
         """Load the protected entities."""
         return
+
+    def get_mutable_region(self):
+        """
+        :return: the region corresponding to this set of protected entities
+        :rtype: :class:`region.Region` object
+        """
+        return self.region
 
     @abstractmethod
     def source_filename(self):

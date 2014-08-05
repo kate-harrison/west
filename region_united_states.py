@@ -27,10 +27,10 @@ class RegionUnitedStates(Region):
     # @doc_inherit
     def _load_protected_entities(self):
         self.protected_entities[protected_entities_tv_stations.ProtectedEntitiesTVStations] = \
-            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesFromGoogle(self.simulation)
+            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesFromGoogle(self.simulation, self)
 
         self.protected_entities[protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
-            protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self.simulation)
+            protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self.simulation, self)
 
 
     # @doc_inherit
@@ -48,12 +48,7 @@ class RegionUnitedStates(Region):
             low = (channel - 14) * 6 + 470
             high = (channel - 14) * 6 + 476
         else:
-            low = None
-            high = None
-            #print("ERROR: incorrect channel number:", channel)
-        if low is not None:
-            low *= 1e6
-            high *= 1e6
+            raise ValueError("Invalid channel number: %d" % channel)
         return (low, high)
 
     # @doc_inherit

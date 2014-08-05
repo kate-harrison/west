@@ -51,7 +51,8 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
 
                 description = plmrs_entry['uid']
 
-                new_plmrs_entry = protected_entity.ProtectedEntityPLMRS(self, latitude, longitude, channel, is_metro, description)
+                new_plmrs_entry = protected_entity.ProtectedEntityPLMRS(self, self.get_mutable_region(), latitude,
+                                                                        longitude, channel, is_metro, description)
 
 
                 self._add_entity(new_plmrs_entry)

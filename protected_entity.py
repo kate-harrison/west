@@ -9,8 +9,9 @@ class ProtectedEntity(object):
 
     required_properties = ["latitude", "longitude"]
 
-    def __init__(self):
+    def __init__(self, region):
         self.log = getModuleLogger(self)
+        self.region = region
 
 
     def log_error_if_necessary_data_missing(self):
@@ -28,8 +29,8 @@ class ProtectedEntity(object):
 
     def get_location(self):
         """
-        DOCUMENT ME
-        :return:
+        :return: (latitude, longitude) in decimal degrees
+        :rtype: tuple of floats
         """
         try:
             return (self.latitude, self.longitude)
@@ -40,15 +41,15 @@ class ProtectedEntity(object):
 
     def get_latitude(self):
         """
-
-        :return:
+        :return: the latitude of the protected entity in decimal degrees
+        :rtype: float
         """
         return self.latitude
 
     def get_longitude(self):
         """
-
-        :return:
+        :return: the longitude of the protected entity in decimal degrees
+        :rtype: float
         """
         return self.longitude
 
@@ -62,6 +63,19 @@ class ProtectedEntity(object):
             return self.channel
         else:
             return None
+
+    def get_center_frequency(self):
+        """
+        Returns None if channel is not an attribute of the ProtectedEntity.
+
+        :return: the center frequency of the ProtectedEntity in MHz
+        :rtype: float
+        """
+        channel = self.get_channel()
+        if channel is None:
+            return None
+        else:
+            return self.region.get_center_frequency(channel)
 
     @abstractmethod
     def add_to_kml(self, kml):
@@ -77,8 +91,8 @@ class ProtectedEntityPLMRS(ProtectedEntity):
 
     required_properties = ["latitude", "longitude", "channel", "is_metro"]
 
-    def __init__(self, container, latitude, longitude, channel, is_metro, description=None):
-        super(ProtectedEntityPLMRS, self).__init__()
+    def __init__(self, container, region, latitude, longitude, channel, is_metro, description=None):
+        super(ProtectedEntityPLMRS, self).__init__(region)
 
         self.container = container
         if not isinstance(container, ProtectedEntities):

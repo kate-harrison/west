@@ -166,9 +166,9 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
                     self.log.error("Error loading station: ", str(e))
                     continue
 
-                new_station = ProtectedEntityTVStation(self, latitude=latitude, longitude=longitude,
-                                                       channel=channel, ERP_Watts=ERP, HAAT_meters=haat,
-                                                       tx_type=tx_type)
+                new_station = ProtectedEntityTVStation(self, self.get_mutable_region(), latitude=latitude,
+                                                       longitude=longitude, channel=channel, ERP_Watts=ERP,
+                                                       HAAT_meters=haat, tx_type=tx_type)
 
                 # Add optional information
                 new_station.add_facility_id(station['facility_id'])
