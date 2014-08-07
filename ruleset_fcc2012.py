@@ -360,7 +360,7 @@ class RulesetFcc2012(Ruleset):
         :param region: region containing the protected entities
         :type region: :class:`region.Region` object
         :param is_whitespace_grid: grid to be filled with the output
-        :type is_whitespace_grid: :class:`data_storage.DataPointGrid` object
+        :type is_whitespace_grid: :class:`data_map.DataMap2D` object
         :param channel: channel to be tested for whitespace
         :type channel: int
         :param device: the device which desires whitespace access
@@ -390,7 +390,7 @@ class RulesetFcc2012(Ruleset):
         :param region: region containing the protected entities
         :type region: :class:`region.Region` object
         :param is_whitespace_grid: grid to be filled with the output
-        :type is_whitespace_grid: :class:`data_storage.DataPointGrid` object
+        :type is_whitespace_grid: :class:`data_map.DataMap2D` object
         :param channel: channel to be tested for whitespace
         :type channel: int
         :param device: the device which desires whitespace access
@@ -419,7 +419,7 @@ class RulesetFcc2012(Ruleset):
         :param region: region containing the protected entities
         :type region: :class:`region.Region` object
         :param is_whitespace_grid: grid to be filled with the output
-        :type is_whitespace_grid: :class:`data_storage.DataPointGrid` object
+        :type is_whitespace_grid: :class:`data_map.DataMap2D` object
         :param channel: channel to be tested for whitespace
         :type channel: int
         :return: None
@@ -446,7 +446,7 @@ class RulesetFcc2012(Ruleset):
         :param region: region containing the protected entities
         :type region: :class:`region.Region` object
         :param is_whitespace_grid: grid to be filled with the output
-        :type is_whitespace_grid: :class:`data_storage.DataPointGrid` object
+        :type is_whitespace_grid: :class:`data_map.DataMap2D` object
         :return: None
         """
         self.log.info("Applying radioastronomy exclusions")

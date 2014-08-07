@@ -1,6 +1,6 @@
-# import data_storage
+# import data_map
 #
-# dpg = data_storage.DataPointGrid.from_grid_specification([-3, 2], [-4, 5], 2, 3)
+# dpg = data_map.DataMap2D.from_grid_specification([-3, 2], [-4, 5], 2, 3)
 #
 # print("Initial matrix:")
 # print(dpg.mutable_matrix)
@@ -19,10 +19,10 @@
 #
 # #############################
 #
-# dpg1 = data_storage.DataPointGrid.from_grid_specification( [0, 5], [0, 5], 5, 5)
+# dpg1 = data_map.DataMap2D.from_grid_specification( [0, 5], [0, 5], 5, 5)
 # dpg1.set_value_by_index(0,0,5)
 #
-# dpg2 = data_storage.DataPointGrid.from_grid_specification( [0, 5], [0, 5], 5, 5)
+# dpg2 = data_map.DataMap2D.from_grid_specification( [0, 5], [0, 5], 5, 5)
 # dpg2.set_value_by_index(0,0,.5)
 #
 # print("Matrix 1:\n", dpg1.mutable_matrix)

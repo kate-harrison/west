@@ -4,7 +4,7 @@ from map import Map
 import simplekml
 
 
-class DataPointGrid(object):
+class DataMap2D(object):
     """Keeps track of DataPoints whose (latitude, longitude)s naturally belong on a grid. Two-dimensional."""
     def __getstate__(self):
         print self.__dict__
@@ -24,7 +24,7 @@ class DataPointGrid(object):
     # m[1,0] = 4
 
     # def __init__(self, initial_points, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions):
-    #     super(DataPointGrid, self).__init__()
+    #     super(DataMap2D, self).__init__()
 
     def __init__(self):
         self.log = getModuleLogger(self)
@@ -48,11 +48,11 @@ class DataPointGrid(object):
         """
         Uses everything from :param other_grid: except that the values are populated from :matrix:.
         :param other_grid:
-        :type other_grid: :class:`DataPointGrid`
+        :type other_grid: :class:`DataMap2D`
         :param matrix:
         :type matrix: :class:`numpy.matrix`
         :return:
-        :rtype: :class:`DataPointGrid`
+        :rtype: :class:`DataMap2D`
         """
         obj = cls.from_grid_specification(other_grid._latitude_bounds, other_grid._longitude_bounds,
                                           other_grid._num_latitude_divisions, other_grid._num_longitude_divisions)
@@ -63,11 +63,11 @@ class DataPointGrid(object):
         """
         Uses everything from :param other_grid: except that the values are populated from :matrix:.
         :param other_grid:
-        :type other_grid: :class:`DataPointGrid`
+        :type other_grid: :class:`DataMap2D`
         :param matrix:
         :type matrix: :class:`numpy.matrix`
         :return:
-        :rtype: :class:`DataPointGrid`
+        :rtype: :class:`DataMap2D`
         """
         obj = cls.from_grid_specification(other_grid._latitude_bounds, other_grid._longitude_bounds,
                                           other_grid._num_latitude_divisions, other_grid._num_longitude_divisions)
@@ -250,12 +250,12 @@ class DataPointGrid(object):
         """Tests grids for comparability (i.e. are they describing the same points?).
 
         :param other_grid:
-        :type other_grid: :class:`DataPointGrid`
+        :type other_grid: :class:`DataMap2D`
         :return: True if the grids use the same coordinates and False otherwise
         :rtype: boolean
         """
-        if not isinstance(other_grid, DataPointGrid):
-            raise ValueError("Expected a DataPointGrid")
+        if not isinstance(other_grid, DataMap2D):
+            raise ValueError("Expected a DataMap2D")
 
         if not (self._latitude_bounds == other_grid._latitude_bounds):
             self.log.error("Latitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._latitude_bounds[0],
@@ -284,13 +284,13 @@ class DataPointGrid(object):
         return True
 
     def combine_grids_with_function(self, other_grid, function):
-        """Returns a new :class:`DataPointGrid` where each point is the output
+        """Returns a new :class:`DataMap2D` where each point is the output
         of calling function(this_point, other_point). Returns None upon error.
 
         Does not modify the data in either grid.
 
         :param other_grid:
-        :type other_grid: :class:`DataPointGrid`
+        :type other_grid: :class:`DataMap2D`
         :param function: handle to a function taking exactly two arguments of type :class:`DataPoint`
         :rtype: :class:`DataPointCollection` matching this one or None
         :return:
@@ -298,7 +298,7 @@ class DataPointGrid(object):
         if not self.grids_are_comparable(other_grid):
             raise TypeError("Grids are not comparable")
 
-        new_grid = DataPointGrid.get_copy_of(self)
+        new_grid = DataMap2D.get_copy_of(self)
         new_grid.reset_all_values()
 
         dimensions = self.mutable_matrix.shape
@@ -320,7 +320,7 @@ class DataPointGrid(object):
         if not self.grids_are_comparable(other_grid):
             raise TypeError("Grids are not comparable")
 
-        new_grid = DataPointGrid.get_copy_of(self)
+        new_grid = DataMap2D.get_copy_of(self)
         new_grid.mutable_matrix = numpy.multiply(self.mutable_matrix, other_grid.mutable_matrix)
 
         return new_grid
@@ -379,7 +379,7 @@ class DataPointGrid(object):
 
 
 
-class GridCollection(object):   # TODO: write this
+class DataMap3D(object):   # TODO: write this
     """Collection of several grids.
     """
     def __init__(self):

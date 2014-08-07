@@ -36,7 +36,7 @@
 
 
 import boundary
-import data_storage
+import data_map
 import pickle
 
 #             return (24.5 <= lat <= 49.38) and (-124.77 <= lon <= -66)
@@ -46,7 +46,7 @@ longitude_bounds = [-124.77, -66]
 num_latitude_divisions = 200
 num_longitude_divisions = 300
 
-grid = data_storage.DataPointGrid.from_grid_specification(latitude_bounds, longitude_bounds,
+grid = data_map.DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds,
                                                           num_latitude_divisions, num_longitude_divisions)
 
 
