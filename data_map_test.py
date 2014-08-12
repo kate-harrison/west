@@ -49,24 +49,30 @@
 # new_dpg.make_map()
 
 import pickle
-import simplekml
+# import simplekml
+from data_map import DataMap3D
 
 with open("is_in_region200x300.pcl", "r") as f:
     grid = pickle.load(f)
 
 
-def poly_transformation_function(poly, value):
-    if value:
-        # poly.style.polystyle.color = simplekml.Color.blue # simplekml.Color.changealphaint(.5, simplekml.Color.blue)
-        poly.style.polystyle.color = simplekml.Color.changealphaint(100, simplekml.Color.blue)
+# def poly_transformation_function(poly, value):
+#     if value:
+#         # poly.style.polystyle.color = simplekml.Color.blue # simplekml.Color.changealphaint(.5, simplekml.Color.blue)
+#         poly.style.polystyle.color = simplekml.Color.changealphaint(100, simplekml.Color.blue)
+#
+#     else:
+#         # poly.style.polystyle.color = simplekml.Color.changealphaint(.5, simplekml.Color.red)
+#         poly.style.polystyle.color = simplekml.Color.changealphaint(0, simplekml.Color.green)
+#
+#
+# def include_polygon_function(value):
+#     return bool(value)
+#
+#
+# grid.export_to_kml("is_in_region200x300.kml", geometry_modification_function=poly_transformation_function, include_polygon_function=include_polygon_function)
 
-    else:
-        # poly.style.polystyle.color = simplekml.Color.changealphaint(.5, simplekml.Color.red)
-        poly.style.polystyle.color = simplekml.Color.changealphaint(0, simplekml.Color.green)
 
-
-def include_polygon_function(value):
-    return bool(value)
-
-
-grid.export_to_kml("is_in_region200x300.kml", geometry_modification_function=poly_transformation_function, include_polygon_function=include_polygon_function)
+dm3 = DataMap3D.from_DataMap2D(grid, [1,2,3])
+import pdb
+pdb.set_trace()
