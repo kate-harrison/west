@@ -3,6 +3,7 @@ from os import path
 from custom_logging import getModuleLogger
 # from geopy.distance import vincenty
 from shapely.geometry import Point, shape
+import shapely
 import fiona
 
 class Boundary(object):
@@ -12,11 +13,10 @@ class Boundary(object):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, simulation):
+    def __init__(self, simulation=None):
         self.log = getModuleLogger(self)
         self.simulation = simulation
 
-        self._boundary_parts = []
         self._geometries = []
 
 
@@ -56,6 +56,25 @@ class Boundary(object):
 
         return False
 
+    @abstractmethod
+    def add_to_kml(self, kml):
+        """
+        Adds the boundary to the given KML object.
+
+        :param kml: KML object to be modified
+        :type kml: :class:`simplekml.Kml`
+        :rtype: list of :class:`simplekml.Polygon` objects
+        """
+        return
+
+    @abstractmethod
+    def get_sets_of_exterior_coordinates(self):
+        """
+        Extracts the exterior coordinates from each constituent polygon and returns them as a list.
+
+        :return: list of (lats, lons) pairs; lats and lons are each lists of floats
+        """
+        return
 
 
 
@@ -91,6 +110,35 @@ class BoundaryShapefile(Boundary):
                     self.log.error("Error reading in %s: %s" % (filename, str(e)))
 
         self._geometries = self._filter_geometries(geometries_and_properties)
+
+    def get_sets_of_exterior_coordinates(self):
+        polygons = []
+        for geometry in self._geometries:
+            if isinstance(geometry, shapely.geometry.polygon.Polygon):
+                polygons.append(geometry)
+            elif isinstance(geometry, shapely.geometry.multipolygon.MultiPolygon):
+                for poly in geometry:
+                    polygons.append(poly)
+
+        sets_of_coordinates = []
+        for polygon in polygons:
+            e = polygon.exterior
+            (lons, lats) = e.coords.xy
+            sets_of_coordinates.append((lats, lons))
+
+        return sets_of_coordinates
+
+    def add_to_kml(self, kml):
+        added_polys = []
+        for (lats, lons) in self.get_sets_of_exterior_coordinates():
+            coords = zip(lats, lons)
+            coords.append(coords[0])    # close the polygon
+
+            poly = kml.newpolygon()
+            poly.outerboundaryis.coords = coords
+            added_polys.append(poly)
+
+        return added_polys
 
     def _omitted_shapes(self):
         """
@@ -146,13 +194,11 @@ class BoundaryContinentalUnitedStatesWithStateBoundaries(BoundaryShapefile):
     http://www.census.gov/geo/maps-data/data/tiger-cart-boundary.html
     """
 
-    # @doc_inherit
     def boundary_filename(self):
         #base_dir = self.simulation.base_data_directory()   # TODO: update this
         base_dir = "data"
         return path.join(base_dir, "cb_2013_us_state_500k", "cb_2013_us_state_500k.shp")
 
-    # @doc_inherit
     def _omitted_shapes(self):
         return ["Hawaii", "Alaska", "Puerto Rico", "American Samoa", "Guam",
                 "Commonwealth of the Northern Mariana Islands", "United States Virgin Islands"]
@@ -164,7 +210,6 @@ class BoundaryContinentalUnitedStatesWithStateBoundaries(BoundaryShapefile):
 class BoundaryUnitedStates(BoundaryShapefile):
     # http://www.census.gov/geo/maps-data/data/cbf/cbf_nation.html
 
-    # @doc_inherit
     def boundary_filename(self):
         #base_dir = self.simulation.base_data_directory()   # TODO: update this
         base_dir = "data"

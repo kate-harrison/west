@@ -35,45 +35,46 @@
 
 
 
-import boundary
-import data_map
-import pickle
-
-#             return (24.5 <= lat <= 49.38) and (-124.77 <= lon <= -66)
-
-latitude_bounds = [24.5, 49.38]
-longitude_bounds = [-124.77, -66]
-num_latitude_divisions = 200
-num_longitude_divisions = 300
-
-grid = data_map.DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds,
-                                                          num_latitude_divisions, num_longitude_divisions)
-
-
-# test_obj ="Hi there"
-
-
-
-
-
-
-
-
-
-b = boundary.BoundaryContinentalUnitedStates(None)
-
-for lat_index in range(num_latitude_divisions):
-    print(lat_index)
-    for lon_index in range(num_longitude_divisions):
-        location = (grid.get_latitude_by_index(lat_index), grid.get_longitude_by_index(lon_index))
-        inside = b.location_inside_boundary(location)
-        grid.set_value_by_index(lat_index, lon_index, inside)
+# import boundary
+# import data_map
+# import pickle
+#
+# #             return (24.5 <= lat <= 49.38) and (-124.77 <= lon <= -66)
+#
+# latitude_bounds = [24.5, 49.38]
+# longitude_bounds = [-124.77, -66]
+# num_latitude_divisions = 200
+# num_longitude_divisions = 300
+#
+# grid = data_map.DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds,
+#                                                           num_latitude_divisions, num_longitude_divisions)
+#
+#
+# b = boundary.BoundaryContinentalUnitedStates(None)
+#
+# for lat_index in range(num_latitude_divisions):
+#     print(lat_index)
+#     for lon_index in range(num_longitude_divisions):
+#         location = (grid.get_latitude_by_index(lat_index), grid.get_longitude_by_index(lon_index))
+#         inside = b.location_inside_boundary(location)
+#         grid.set_value_by_index(lat_index, lon_index, inside)
+#
+#
+# with open("is_in_region200x300.pcl", "w") as f:
+#     pickle.dump(grid, f)
+#
+#
+# map = grid.make_map()
+# map.blocking_show()
 
 
-with open("is_in_region200x300.pcl", "w") as f:
-    pickle.dump(grid, f)
 
 
-map = grid.make_map()
-map.blocking_show()
+from boundary import BoundaryContinentalUnitedStatesWithStateBoundaries
+import simplekml
 
+kml = simplekml.Kml()
+b = BoundaryContinentalUnitedStatesWithStateBoundaries(None)
+b.add_to_kml(kml)
+
+kml.save("boundaries.kml")
