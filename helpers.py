@@ -29,3 +29,18 @@ def channels_are_adjacent_in_frequency(region, chan1, chan2):
     if any([bound is None for bound in [low1, low2, high1, high2]]):
         return False
     return abs(low1 - high2) < .001 or abs(low2 - high1) < .001
+
+
+def add_bounding_box_to_kml(kml, bounding_box):
+    poly = kml.newpolygon()
+
+    poly.outerboundaryis.coords = [
+        (bounding_box['max_lon'], bounding_box['max_lat']),
+        (bounding_box['min_lon'], bounding_box['max_lat']),
+        (bounding_box['min_lon'], bounding_box['min_lat']),
+        (bounding_box['max_lon'], bounding_box['min_lat']),
+        (bounding_box['max_lon'], bounding_box['max_lat'])      # repeat the last one for closure
+    ]
+
+    return poly
+
