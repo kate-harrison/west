@@ -7,8 +7,7 @@ import subprocess
 source_directories = [os.path.abspath("..")]
 rst_directory = "."
 
-excluded_modules = ["test", "test2", "test3", "doc_inherit", "snippets",
-                    "doc_inherit2", "custom_logging", "see_profile"]
+excluded_modules = ["doc_inherit", "snippets", "doc_inherit2", "custom_logging", "see_profile"]
 
 # groups = ["propagation_model", "protected_entities", "protected_entity", "region", "ruleset"]
 groups = [("Propagation models", "propagation_model"), ("Protected entities", "protected_entities"),
@@ -16,6 +15,7 @@ groups = [("Propagation models", "propagation_model"), ("Protected entities", "p
 
 
 test_suffix = "test.py"
+test_prefix = "test"
 
 inheritance_warning = ".. warning:: Note that the common interface is defined by the base class. Any public " + \
                       "functions implemented in derived classes are not guaranteed to exist in any other classes. " + \
@@ -121,7 +121,7 @@ for src_dir in source_directories:
             continue
 
         # Skip test files
-        if filename.lower().endswith(test_suffix):
+        if filename.lower().endswith(test_suffix) or filename.lower().startswith(test_prefix):
             continue
 
         module_name = filename[:-3]
