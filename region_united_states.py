@@ -55,8 +55,9 @@ class RegionUnitedStates(Region):
 
     # @doc_inherit
     def get_tvws_channel_list(self):
-        # 2-36, 38-51
-        return range(2, 37) + range(38, 52)
+        # TODO: move to ruleset?
+        # 2, 5-36, 38-51
+        return [2] + range(5, 37) + range(38, 52)
 
     # @doc_inherit
     def get_portable_tvws_channel_list(self):
