@@ -327,14 +327,10 @@ class DataMap2D(object):
         return new_grid
 
 
-    def make_map(self, transformation=None):
+    def make_map(self, *args, **kwargs):
         """Return a :class:`map.Map` with the data from this grid. Please refer to :meth:`map.Map.__init__` for more
-        information on transformations."""
-        # make_map(self._matrix)
-        if transformation is None:
-            return Map(self)
-        else:
-            return Map(self, transformation = transformation)
+        information."""
+        return Map(self, *args, **kwargs)
 
 
     def add_to_kml(self, kml=None, geometry_modification_function=None, include_polygon_function=None, filename=None, save=True):
@@ -461,8 +457,10 @@ class DataMap3D(object):
         self._layers = {}
         self._layer_descr_list = layer_descr_list
 
+        data_map_class = template_data_map_2d.__class__
+
         for layer_descr in layer_descr_list:
-            self._layers[layer_descr] = DataMap2D.get_copy_of(template_data_map_2d)
+            self._layers[layer_descr] = data_map_class.get_copy_of(template_data_map_2d)
 
         if len(self._layers.keys()) is not len(layer_descr_list):
             self.log.warning("Incorrect number of layers created; duplicate keys?")
