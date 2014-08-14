@@ -66,9 +66,9 @@ class ProtectedEntity(object):
 
     def get_channel(self):
         """
-        Returns None if channel is not an attribute of the ProtectedEntity.
+        The channel on which the ProtectedEntity operates.
 
-        :return:
+        Returns None if channel is not an attribute of the ProtectedEntity.
         """
         if hasattr(self, "channel"):
             return self.channel
@@ -91,13 +91,20 @@ class ProtectedEntity(object):
     @abstractmethod
     def add_to_kml(self, kml):
         """
+        Add the protected entity to a KML object for display in e.g. Google Earth.
 
-        :param kml:
-        :return:
+        :param kml: KML object to be modified
+        :type kml: :class:`simplekml.Kml`
+        :return: the object describing this ProtectedEntity in the KML (e.g. for attribute modification)
+        :rtype: :class:`simplekml.Point` or :class:`simplekml.Polygon`
         """
         return
 
     def _create_bounding_box(self):
+        """
+        Generate a bounding box for the ProtectedEntity. The width and height are set by
+        :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`.
+        """
         bb = {'min_lat': float('inf'),
               'max_lat': -float('inf'),
               'min_lon': float('inf'),
@@ -120,9 +127,27 @@ class ProtectedEntity(object):
         self.protected_bounding_box = bb
 
     def get_bounding_box(self):
+        """
+        Retrieve the bounding box for the ProtectedEntity. See :meth:`location_in_bounding_box` for more details.
+
+        A bounding box is a dictionary with four keys: min_lat, max_lat, min_lon, max_lon. Each will give a coordinate
+        in decimal degrees.
+        """
         return self.protected_bounding_box
 
     def location_in_bounding_box(self, location):
+        """
+        Helper function to quickly identify if the ProtectedEntity is potentially protected. This function is faster
+        than an actual protection test because it compares a few floats rather than computing distance, (potentially)
+        propagation, etc.
+
+        The width and height are set by :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`.
+
+        :param location: (latitude, longitude) in decimal degrees
+        :type location: tuple of floats
+        :return: True if the location is inside the bounding box; False otherwise
+        :rtype: bool
+        """
         (lat, lon) = location
         bb = self.get_bounding_box()
         return (bb['min_lat'] <= lat <= bb['max_lat']) and (bb['min_lon'] <= lon <= bb['max_lon'])

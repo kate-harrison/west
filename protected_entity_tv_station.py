@@ -27,6 +27,9 @@ class ProtectedEntityTVStation(ProtectedEntity):
         self.log_error_if_necessary_data_missing()
 
     def to_string(self):
+        """
+        Returns some of the TV station's information as a formatted string.
+        """
         output = ""
         output += "Location: (%f,%f)" % (self.latitude, self.longitude) + "\n"
         output += "Type: %s" % self.tx_type + "\t"
@@ -37,9 +40,15 @@ class ProtectedEntityTVStation(ProtectedEntity):
         return output
 
     def add_facility_id(self, facility_id):
+        """
+        Add the facility ID associated with the TV station.
+        """
         self.facility_id = facility_id
 
     def add_callsign(self, callsign):
+        """
+        Add the callsign associated with the TV station.
+        """
         self.callsign = callsign
 
     def get_location(self):
@@ -49,27 +58,53 @@ class ProtectedEntityTVStation(ProtectedEntity):
         return self.channel
 
     def get_erp_watts(self):
+        """
+        Returns the ERP (effective radiated power) of the TV station in Watts.
+        """
         return self.ERP_Watts
 
     def get_erp_kilowatts(self):
+        """
+        Returns the ERP (effective radiated power) of the TV station in kilowatts.
+        """
         return self.ERP_Watts / 1000.0
 
     def get_haat_meters(self):
+        """
+        Returns the HAAT (height above average terrain) of the TV station in meters.
+        """
         return self.HAAT_meters
 
     def get_tx_type(self):
+        """
+        Returns the transmitter type of the TV station (depends on source data). If possible, use :meth:`is_digital`
+        and :meth:`is_analog` to avoid dependence on source data.
+        """
         return self.tx_type
 
     def is_digital(self):
+        """
+        Returns True if the TV station is digital and False otherwise. See also :meth:`is_analog`.
+        """
         return self.tx_type in self.container.digital_tv_types()
 
     def is_analog(self):
+        """
+        Returns True if the TV station is analog and False otherwise. See also :meth:`is_digital`.
+        """
         return self.tx_type in self.container.analog_tv_types()
 
     def is_cochannel(self, channel):
+        """
+        Returns True if `channel` is the same as this station's channel and False otherwise.
+        """
         return self.channel == channel
 
     def is_adjacent_channel(self, channel):
+        """
+        Returns True if `channel` is adjacent to this station's channel and False otherwise. See also
+        :meth:`helpers.channels_are_adjacent_in_frequency`.
+        """
         return helpers.channels_are_adjacent_in_frequency(self.container.simulation.get_mutable_region(), self.channel, channel)
 
     def add_to_kml(self, kml):
