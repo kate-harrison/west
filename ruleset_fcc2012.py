@@ -13,13 +13,13 @@ class RulesetFcc2012(Ruleset):
     """Ruleset for FCC 2012 rules."""
 
     _low_vhf_lower_frequency_mhz = 54   # US channel 2 (lower edge)
-    _low_vhf_upper_frequency_mhz = 82   # US channel 6 (upper edge)
+    _low_vhf_upper_frequency_mhz = 88   # US channel 6 (upper edge)
 
     _high_vhf_lower_frequency_mhz = 174  # US channel 7 (lower edge)
-    _high_vhf_upper_frequency_mhz = 210  # US channel 13 (upper edge)
+    _high_vhf_upper_frequency_mhz = 216  # US channel 13 (upper edge)
 
     _uhf_lower_frequency_mhz = 470      # US channel 14 (lower edge)
-    _uhf_upper_frequency_mhz = 884      # US channel 84 (upper edge)
+    _uhf_upper_frequency_mhz = 890      # US channel 83 (upper edge)
 
     def name(self):
         return "FCC 2012 regulations"
