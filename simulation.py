@@ -66,6 +66,12 @@ class Simulation(object):
         """
         return self._region
 
+    def get_mutable_device(self):
+        """
+        :return: the default device used for this simulation
+        :rtype: :class:`device.Device` object
+        """
+
     def set_device(self, device):
         """
         :param device: device to use for the simulation
@@ -96,8 +102,10 @@ class Simulation(object):
         return self._ruleset.location_is_whitespace(self._region, location, channel, device)
 
         
-    def turn_grid_into_whitespace_map(self, is_whitespace_grid, channel, device=None):
+    def turn_data_map_into_whitespace_map(self, is_whitespace_grid, channel, device=None):
         device = device or self._device
+
+        # TODO: move this check into the ruleset
 
         if channel not in self._region.get_tvws_channel_list():
             is_whitespace_grid.reset_all_values(False)
@@ -107,7 +115,7 @@ class Simulation(object):
             is_whitespace_grid.reset_all_values(False)
             return is_whitespace_grid
 
-        return self._ruleset.turn_grid_into_whitespace_map(self._region, is_whitespace_grid, channel, device)
+        return self._ruleset.turn_data_map_into_whitespace_map(self._region, is_whitespace_grid, channel, device)
 
 
     # def __init__(self, config_class, propagation_model_class, protected_entities_class):

@@ -346,7 +346,7 @@ class RulesetFcc2012(Ruleset):
 
         return True
 
-    def turn_grid_into_whitespace_map(self, region, is_whitespace_grid, channel, device, reset_grid=False):
+    def turn_data_map_into_whitespace_map(self, region, is_whitespace_grid, channel, device, reset_grid=False):
         """
         Turns the input grid into a map of whitespace availability. A value of `True` means that whitespace is available
         in that location, whereas a value of `False` means that that location is not considered whitespace for the
