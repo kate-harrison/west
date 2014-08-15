@@ -66,7 +66,6 @@ def get_colored_formatter():
 base_logger = logging.getLogger("base")
 base_logger.setLevel(logging.DEBUG)
 
-
 _ch = logging.StreamHandler()
 #_formatter = logging.Formatter("[%(levelname)s] %(name)s @ %(asctime)s: %("
 #                               "message)s")
@@ -74,6 +73,7 @@ _formatter = get_colored_formatter()
 _ch.setFormatter(_formatter)
 base_logger.addHandler(_ch)
 
+_all_loggers = [base_logger]
 
 def getModuleLogger(obj):
     module_name = obj.__class__.__name__
@@ -81,4 +81,24 @@ def getModuleLogger(obj):
     new_logger = logging.getLogger(module_name)
     new_logger.setLevel(logging.DEBUG)
     new_logger.addHandler(_ch)
+    _all_loggers.append(new_logger)
     return new_logger
+
+def changeLogLevel(new_log_level):
+    for logger in _all_loggers:
+        logger.setLevel(new_log_level)
+
+def disableLogging():
+    changeLogLevel(logging.CRITICAL)
+
+def enableDebugLogging():
+    changeLogLevel(logging.DEBUG)
+
+def enableWarningLogging():
+    changeLogLevel(logging.WARNING)
+
+def enableErrorLogging():
+    changeLogLevel(logging.ERROR)
+
+def getCurrentLogLevel():
+    return base_logger.getEffectiveLevel()
