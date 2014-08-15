@@ -248,42 +248,51 @@ class DataMap2D(object):
         return True
 
 
-    def grid_is_comparable(self, other_grid):
+    def data_map_is_comparable(self, other_grid):
         """Tests grids for comparability (i.e. are they describing the same points?).
 
         :param other_grid:
         :type other_grid: :class:`DataMap2D`
-        :return: True if the grids use the same coordinates and False otherwise
-        :rtype: boolean
+        :return: True if the grids use the same coordinates and False otherwise; error message
+        :rtype: boolean, str
         """
         if not isinstance(other_grid, DataMap2D):
-            raise ValueError("Expected a DataMap2D")
+            return False, "Expected a DataMap2D"
 
         if not (self._latitude_bounds == other_grid._latitude_bounds):
-            self.log.error("Latitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._latitude_bounds[0],
+            return False, "Latitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._latitude_bounds[0],
                                                                                      self._latitude_bounds[1],
                                                                                      other_grid._latitude_bounds[0],
-                                                                                     other_grid._latitude_bounds[1]))
-            return False
+                                                                                     other_grid._latitude_bounds[1])
 
         if not (self._longitude_bounds == other_grid._longitude_bounds):
-            self.log.error("Longitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._longitude_bounds[0],
+            return False, "Longitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._longitude_bounds[0],
                                                                                      self._longitude_bounds[1],
                                                                                      other_grid._longitude_bounds[0],
-                                                                                     other_grid._longitude_bounds[1]))
-            return False
+                                                                                     other_grid._longitude_bounds[1])
 
         if not (self._num_latitude_divisions == other_grid._num_latitude_divisions):
-            self.log.error("Number of latitude divisions is not equal: %d vs. %d" % (self._num_latitude_divisions,
-                                                                                     other_grid._num_latitude_divisions))
-            return False
+            return False, "Number of latitude divisions is not equal: %d vs. %d" % (self._num_latitude_divisions,
+                                                                                     other_grid._num_latitude_divisions)
 
         if not (self._num_longitude_divisions == other_grid._num_longitude_divisions):
-            self.log.error("Number of longitude divisions is not equal: %d vs. %d" % (self._num_longitude_divisions,
-                                                                                     other_grid._num_longitude_divisions))
-            return False
+            return False, "Number of longitude divisions is not equal: %d vs. %d" % (self._num_longitude_divisions,
+                                                                                     other_grid._num_longitude_divisions)
 
-        return True
+        return True, None
+
+    def raise_error_if_data_maps_are_incomparable(self, other_grid):
+        """Tests grids for comparability (i.e. are they describing the same points?). Raise a ValueError if they are
+         incomparable.
+
+        :param other_grid:
+        :type other_grid: :class:`DataMap2D`
+        """
+        comparable, error_msg = self.data_map_is_comparable(other_grid)
+        if comparable:
+            return
+        else:
+            raise TypeError(error_msg)
 
     def combine_grids_with_function(self, other_grid, function):
         """Returns a new :class:`DataMap2D` where each point is the output
@@ -297,8 +306,7 @@ class DataMap2D(object):
         :rtype: :class:`DataPointCollection` matching this one or None
         :return:
         """
-        if not self.grid_is_comparable(other_grid):
-            raise TypeError("Grids are not comparable")
+        self.raise_error_if_data_maps_are_incomparable(other_grid)
 
         new_grid = DataMap2D.get_copy_of(self)
         new_grid.reset_all_values()
@@ -318,8 +326,7 @@ class DataMap2D(object):
         Multiplies the two grids element-wise (i.e. at each location) and returns a new :class:`DataMap2D`
         containing the result. The grids must be comparable (i.e. have the same lat/long bounds).
         """
-        if not self.grid_is_comparable(other_grid):
-            raise TypeError("Grids are not comparable")
+        self.raise_error_if_data_maps_are_incomparable(other_grid)
 
         new_grid = DataMap2D.get_copy_of(self)
         new_grid.mutable_matrix = numpy.multiply(self.mutable_matrix, other_grid.mutable_matrix)
