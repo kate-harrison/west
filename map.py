@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import matplotlib.cm
 import numpy
-from region import Region
 import datetime
 from custom_logging import getModuleLogger
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -44,27 +42,26 @@ class Map(object):
                                      "atan":    _transformation_inverse_atan}
 
 
-    def get_transformation(self, type):
-        if type in self._transformation_dict:
-            return self._transformation_dict[type]
+    def get_transformation(self, transformation_type):
+        if transformation_type in self._transformation_dict:
+            return self._transformation_dict[transformation_type]
         else:
             self.log.warning("Defaulting to linear transformation")
             return Map._transformation_linear
 
-    def get_transformation_inverse(self, type):
-        if type in self._transformation_inverse_dict:
-            return self._transformation_inverse_dict[type]
+    def get_transformation_inverse(self, transformation_type):
+        if transformation_type in self._transformation_inverse_dict:
+            return self._transformation_inverse_dict[transformation_type]
         else:
             self.log.warning("Defaulting to linear transformation for inverse")
             return Map._transformation_linear
 
-
-    def __init__(self, data_map_2d, transformation="linear", is_in_region_map=None):
+    def __init__(self, datamap2d, transformation="linear", is_in_region_map=None):
         """
         Plots an image of the given :class:`data_map.DataMap2D`.
 
-        :param data_map_2d:
-        :type data_map_2d: :class:`data_map.DataMap2D`
+        :param datamap2d:
+        :type datamap2d: :class:`data_map.DataMap2D`
         :param transformation: the transformation to be applied to the data before plotting ("linear", "log", or "atan")
         :type transformation: string
         :return: None
@@ -75,8 +72,8 @@ class Map(object):
         self._transformation_inverse = self.get_transformation_inverse(transformation)
         self.log.debug("Using transformation %s" % str(self._transformation))
 
-        self._data_map_2d = data_map_2d
-        self._data = self._transformation(data_map_2d.mutable_matrix)
+        self._datamap2d = datamap2d
+        self._data = self._transformation(datamap2d.mutable_matrix)
         self.make_region_background_white(is_in_region_map)
 
         self._fig, self._ax = plt.subplots()
@@ -116,7 +113,6 @@ class Map(object):
         mask = 1.0 - is_in_region_map.get_matrix_copy()
         self._data = ma.masked_array(self._data, mask=mask)
 
-
     def set_data_max_value(self, threshold=None):
         """
         Clamps values above the threshold at the threshold. This prevents out-of-bounds values from being plotted
@@ -129,6 +125,7 @@ class Map(object):
         :return: None
         """
         # TODO: write this function
+        # Tip: use http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html
         return
 
     def auto_clip_data(self, threshold=0.98):
@@ -153,11 +150,9 @@ class Map(object):
         :type filename: str
         :return: None
         """
-        filename = filename or ( str(datetime.datetime.utcnow()) + ".png")
+        filename = filename or (str(datetime.datetime.utcnow()) + ".png")
         self.log.debug("Saving to filename %s" % filename)
         self._canvas.print_png(filename)        # also accepts dpi= kwarg
-
-
 
     def _remove_axes(self):
         """
@@ -220,7 +215,6 @@ class Map(object):
         self._colorbar = self._fig.colorbar(self._image)
 
         (vmin, vmax) = self._set_clim(vmin, vmax)
-
 
         if decimal_precision is not None:
             self._label_num_decimals = decimal_precision
@@ -299,7 +293,6 @@ class Map(object):
         """
         return plt.title(title, fontsize=self.title_font_size, fontname=self.fontname)
 
-
     def set_boundary_color(self, new_color=None):
         """
         Set the color of the boundary line. See :meth:`add_boundary_outlines` and
@@ -330,13 +323,13 @@ class Map(object):
         color = self._boundary_color
         linewidth = self._boundary_linewidth
 
-        map_min_lat = min(self._data_map_2d.latitudes)
-        map_max_lat = max(self._data_map_2d.latitudes)
-        map_min_lon = min(self._data_map_2d.longitudes)
-        map_max_lon = max(self._data_map_2d.longitudes)
+        map_min_lat = min(self._datamap2d.latitudes)
+        map_max_lat = max(self._datamap2d.latitudes)
+        map_min_lon = min(self._datamap2d.longitudes)
+        map_max_lon = max(self._datamap2d.longitudes)
 
-        num_lat_divs = len(self._data_map_2d.latitudes)
-        num_lon_divs = len(self._data_map_2d.longitudes)
+        num_lat_divs = len(self._datamap2d.latitudes)
+        num_lon_divs = len(self._datamap2d.longitudes)
 
         def change_range(old_value, old_min, old_max, new_min, new_max):
             return (((old_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min

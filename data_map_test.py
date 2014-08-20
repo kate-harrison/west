@@ -1,6 +1,6 @@
 # import data_map
 #
-# dpg = data_map.DataMap2D.from_grid_specification([-3, 2], [-4, 5], 2, 3)
+# dpg = data_map.DataMap2D.from_specification([-3, 2], [-4, 5], 2, 3)
 #
 # print("Initial matrix:")
 # print(dpg.mutable_matrix)
@@ -19,10 +19,10 @@
 #
 # #############################
 #
-# dpg1 = data_map.DataMap2D.from_grid_specification( [0, 5], [0, 5], 5, 5)
+# dpg1 = data_map.DataMap2D.from_specification( [0, 5], [0, 5], 5, 5)
 # dpg1.set_value_by_index(0,0,5)
 #
-# dpg2 = data_map.DataMap2D.from_grid_specification( [0, 5], [0, 5], 5, 5)
+# dpg2 = data_map.DataMap2D.from_specification( [0, 5], [0, 5], 5, 5)
 # dpg2.set_value_by_index(0,0,.5)
 #
 # print("Matrix 1:\n", dpg1.mutable_matrix)
@@ -32,7 +32,7 @@
 #     #return a * b
 #     return max(a,b)
 #
-# new_dpg = dpg1.combine_grids(dpg2, test_function)
+# new_dpg = dpg1.combine_datamaps_with_function(dpg2, test_function)
 # print("Output matrix:\n", new_dpg.mutable_matrix)
 #
 #
@@ -53,7 +53,7 @@ import pickle
 from data_map import DataMap3D
 
 with open("is_in_region200x300.pcl", "r") as f:
-    grid = pickle.load(f)
+    dm = pickle.load(f)
 
 
 # def poly_transformation_function(poly, value):
@@ -70,9 +70,10 @@ with open("is_in_region200x300.pcl", "r") as f:
 #     return bool(value)
 #
 #
-# grid.export_to_kml("is_in_region200x300.kml", geometry_modification_function=poly_transformation_function, include_polygon_function=include_polygon_function)
+# dm.export_to_kml("is_in_region200x300.kml", geometry_modification_function=poly_transformation_function,
+#                  include_polygon_function=include_polygon_function)
 
 
-dm3 = DataMap3D.from_DataMap2D(grid, [1,2,3])
+dm3 = DataMap3D.from_DataMap2D(dm, [1, 2, 3])
 import pdb
 pdb.set_trace()

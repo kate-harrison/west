@@ -3,7 +3,7 @@ import numpy
 
 
 
-def calculate_cdf_from_map(data_map, weight_map=None, mask_map=None):
+def calculate_cdf_from_datamap2d(data_map, weight_map=None, mask_map=None):
     """
     Calculate a CDF of a data map given a corresponding (optional) weight map. If no weight map is given, equal weights
     will be used.
@@ -29,9 +29,9 @@ def calculate_cdf_from_map(data_map, weight_map=None, mask_map=None):
         raise TypeError("is_in_region map must be a DataMap2D.")
 
     if weight_map is not None:
-        data_map.raise_error_if_data_maps_are_incomparable(weight_map)
+        data_map.raise_error_if_datamaps_are_incomparable(weight_map)
     if mask_map is not None:
-        data_map.raise_error_if_data_maps_are_incomparable(mask_map)
+        data_map.raise_error_if_datamaps_are_incomparable(mask_map)
 
     data_matrix = data_map.get_matrix_copy()
     if weight_map is None:

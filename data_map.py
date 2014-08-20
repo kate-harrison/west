@@ -10,59 +10,66 @@ class DataMap2D(object):
     def __init__(self):
         self.log = getModuleLogger(self)
 
-
     @classmethod
-    def from_grid_specification(cls, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions):
+    def from_specification(cls, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions):
         """
         :param latitude_bounds: (min_latitude, max_latitude)
         :param longitude_bounds: (min_longitude, max_longitude)
-        :param num_latitude_divisions:
-        :param num_longitude_divisions:
-        :return:
-        """
-        obj = cls()
-        obj._initialize_grid(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions)
-        return obj
-
-    @classmethod
-    def get_copy_of(cls, other_grid):
-        """
-        Creates a copy of the grid. The internal matrix will also be copied.
-
-        :param other_grid:
-        :type other_grid: :class:`DataMap2D`
+        :param num_latitude_divisions: number of latitude points per longitude
+        :type num_latitude_divisions: int
+        :param num_longitude_divisions: number of longitude points per latitude
+        :type num_longitude_divisions: int
         :return:
         :rtype: :class:`DataMap2D`
         """
-        obj = cls.from_grid_specification(other_grid._latitude_bounds, other_grid._longitude_bounds,
-                                          other_grid._num_latitude_divisions, other_grid._num_longitude_divisions)
-        obj.mutable_matrix = other_grid.mutable_matrix
+        obj = cls()
+        obj._initialize(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions)
         return obj
 
     @classmethod
-    def from_existing_grid(cls, other_grid, matrix):
+    def get_copy_of(cls, other_datamap2d):
         """
-        Uses everything from :param other_grid: except that the values are copied from :matrix:. If :matrix: is a
+        Creates a copy of the :class:`DataMap2D`. The internal matrix will also be copied.
+
+        :param other_datamap2d:
+        :type other_datamap2d: :class:`DataMap2D`
+        :return:
+        :rtype: :class:`DataMap2D`
+        """
+        obj = cls.from_specification(other_datamap2d._latitude_bounds, other_datamap2d._longitude_bounds,
+                                     other_datamap2d._num_latitude_divisions,
+                                     other_datamap2d._num_longitude_divisions)
+        obj.mutable_matrix = other_datamap2d.mutable_matrix
+        return obj
+
+    @classmethod
+    def from_existing_DataMap2D(cls, other_datamap2d, matrix):
+        """
+        Uses everything from ``other_datamap2d`` except that the values are copied from ``matrix``. If ``matrix`` is a
         scalar, all values will be initialized to that value.
 
-        :param other_grid:
-        :type other_grid: :class:`DataMap2D`
+        :param other_datamap2d:
+        :type other_datamap2d: :class:`DataMap2D`
         :param matrix:
         :type matrix: :class:`numpy.matrix`
         :return:
         :rtype: :class:`DataMap2D`
         """
-        obj = cls.from_grid_specification(other_grid._latitude_bounds, other_grid._longitude_bounds,
-                                          other_grid._num_latitude_divisions, other_grid._num_longitude_divisions)
+        obj = cls.from_specification(other_datamap2d._latitude_bounds, other_datamap2d._longitude_bounds,
+                                     other_datamap2d._num_latitude_divisions,
+                                     other_datamap2d._num_longitude_divisions)
         if isinstance(matrix, numpy.matrix):
             obj.mutable_matrix = matrix
         else:
             obj.reset_all_values(matrix)
         return obj
 
-
-    def _initialize_grid(self, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions, data_type=float):
-        self.log.debug("Creating grid:\nLatitude bounds: (%f, %f) (%d divisions)\nLongitude bounds: (%f, %f) (%d divisions)" % (latitude_bounds[0], latitude_bounds[1], num_latitude_divisions, longitude_bounds[0], longitude_bounds[1], num_longitude_divisions))
+    def _initialize(self, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions,
+                    data_type=float):
+        self.log.debug("Creating DataMap2D:" +
+                       "\nLatitude bounds: (%f, %f) (%d divisions)\nLongitude bounds: (%f, %f) (%d divisions)"
+                       % (latitude_bounds[0], latitude_bounds[1], num_latitude_divisions, longitude_bounds[0],
+                          longitude_bounds[1], num_longitude_divisions))
 
         (min_lat, max_lat) = latitude_bounds
         if min_lat > max_lat:
@@ -83,9 +90,8 @@ class DataMap2D(object):
         self._latitude_index_dict = self._convert_list_to_dict(self._latitudes)
         self._longitude_index_dict = self._convert_list_to_dict(self._longitudes)
 
-        self._matrix = numpy.empty((num_latitude_divisions, num_longitude_divisions), dtype=data_type )
+        self._matrix = numpy.empty((num_latitude_divisions, num_longitude_divisions), dtype=data_type)
         self.reset_all_values()
-
 
     def _convert_list_to_dict(self, user_list):
         output_dict = {}
@@ -105,7 +111,6 @@ class DataMap2D(object):
         else:
             self.log.error("Latitude not found: %f" % latitude)
             return None
-
 
     def get_longitude_index(self, longitude):
         """
@@ -170,13 +175,13 @@ class DataMap2D(object):
         return self.get_value_by_index(latitude_index, longitude_index)
 
     def get_indices_from_location(self, location):
-        """Determine the indices of the grid which correspond to the given location."""
+        """Determine the indices of the :class:`DataMap2D` which correspond to the given location."""
         (latitude, longitude) = location
         latitude_index = self.get_latitude_index(latitude)
         longitude_index = self.get_longitude_index(longitude)
 
         if latitude_index is None or longitude_index is None:
-            self.log.error("Could not get value: location not found in grid")
+            self.log.error("Could not get value: location not found in DataMap2D")
             raise ValueError
         else:
             return (latitude_index, longitude_index)
@@ -201,18 +206,17 @@ class DataMap2D(object):
         """
         return self._longitudes[index]
 
-
     def get_value_by_index(self, latitude_index, longitude_index):
-        """Get the value of the grid at the specified indices."""
+        """Get the value of the :class:`DataMap2D` at the specified indices."""
         return self._matrix[latitude_index][longitude_index]
 
     def set_value_by_index(self, latitude_index, longitude_index, new_value):
-        """Set the value of the grid at the specified indices."""
+        """Set the value of the :class:`DataMap2D` at the specified indices."""
         self._matrix[latitude_index][longitude_index] = new_value
 
     def set_value_by_location(self, location, new_value):
         """
-        Sets the value of the DataPoint(s) at that location. If unsuccessful (return
+        Sets the value of the :class:`DataMap2D` at that location. If unsuccessful (return
         value False), the state of related data is not guaranteed.
 
         :param location: (latitude, longitude)
@@ -228,100 +232,97 @@ class DataMap2D(object):
         self.set_value_by_index(latitude_index, longitude_index, new_value)
         return True
 
+    def datamap_is_comparable(self, other_datamap2d):
+        """Tests two :class:`DataMap2D` objects for comparability (i.e. are they describing the same points?).
 
-    def data_map_is_comparable(self, other_grid):
-        """Tests grids for comparability (i.e. are they describing the same points?).
-
-        :param other_grid:
-        :type other_grid: :class:`DataMap2D`
-        :return: True if the grids use the same coordinates and False otherwise; error message
+        :param other_datamap2d:
+        :type other_datamap2d: :class:`DataMap2D`
+        :return: True if the objects use the same coordinates and False otherwise; error message
         :rtype: boolean, str
         """
-        if not isinstance(other_grid, DataMap2D):
+        if not isinstance(other_datamap2d, DataMap2D):
             return False, "Expected a DataMap2D"
 
-        if not (self._latitude_bounds == other_grid._latitude_bounds):
+        if not (self._latitude_bounds == other_datamap2d._latitude_bounds):
             return False, "Latitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._latitude_bounds[0],
-                                                                                     self._latitude_bounds[1],
-                                                                                     other_grid._latitude_bounds[0],
-                                                                                     other_grid._latitude_bounds[1])
+                                                                                    self._latitude_bounds[1],
+                                                                                    other_datamap2d._latitude_bounds[0],
+                                                                                    other_datamap2d._latitude_bounds[1])
 
-        if not (self._longitude_bounds == other_grid._longitude_bounds):
-            return False, "Longitude bounds are not equal: (%f, %f) vs. (%f, %f)" % (self._longitude_bounds[0],
-                                                                                     self._longitude_bounds[1],
-                                                                                     other_grid._longitude_bounds[0],
-                                                                                     other_grid._longitude_bounds[1])
+        if not (self._longitude_bounds == other_datamap2d._longitude_bounds):
+            return False, "Longitude bounds are not equal: (%f, %f) vs. (%f, %f)" \
+                          % (self._longitude_bounds[0], self._longitude_bounds[1],
+                          other_datamap2d._longitude_bounds[0], other_datamap2d._longitude_bounds[1])
 
-        if not (self._num_latitude_divisions == other_grid._num_latitude_divisions):
-            return False, "Number of latitude divisions is not equal: %d vs. %d" % (self._num_latitude_divisions,
-                                                                                     other_grid._num_latitude_divisions)
+        if not (self._num_latitude_divisions == other_datamap2d._num_latitude_divisions):
+            return False, "Number of latitude divisions is not equal: %d vs. %d" \
+                          % (self._num_latitude_divisions, other_datamap2d._num_latitude_divisions)
 
-        if not (self._num_longitude_divisions == other_grid._num_longitude_divisions):
-            return False, "Number of longitude divisions is not equal: %d vs. %d" % (self._num_longitude_divisions,
-                                                                                     other_grid._num_longitude_divisions)
+        if not (self._num_longitude_divisions == other_datamap2d._num_longitude_divisions):
+            return False, "Number of longitude divisions is not equal: %d vs. %d" \
+                          % (self._num_longitude_divisions, other_datamap2d._num_longitude_divisions)
 
         return True, None
 
-    def raise_error_if_data_maps_are_incomparable(self, other_grid):
-        """Tests grids for comparability (i.e. are they describing the same points?). Raise a ValueError if they are
-         incomparable.
+    def raise_error_if_datamaps_are_incomparable(self, other_datamap2d):
+        """Tests two :class:`DataMap2D` objects for comparability (i.e. are they describing the same points?). Raises a
+        ValueError if they are incomparable.
 
-        :param other_grid:
-        :type other_grid: :class:`DataMap2D`
+        :param other_datamap2d:
+        :type other_datamap2d: :class:`DataMap2D`
         """
-        comparable, error_msg = self.data_map_is_comparable(other_grid)
+        comparable, error_msg = self.datamap_is_comparable(other_datamap2d)
         if comparable:
             return
         else:
             raise TypeError(error_msg)
 
-    def combine_grids_with_function(self, other_grid, function):
+    def combine_datamaps_with_function(self, other_datamap2d, function):
         """Returns a new :class:`DataMap2D` where each point is the output
         of calling function(this_point, other_point). Returns None upon error.
 
-        Does not modify the data in either grid.
+        Does not modify the data in either :class:`DataMap2D`.
 
-        :param other_grid:
-        :type other_grid: :class:`DataMap2D`
+        :param other_datamap2d:
+        :type other_datamap2d: :class:`DataMap2D`
         :param function: handle to a function taking exactly two arguments of type :class:`DataPoint`
         :rtype: :class:`DataPointCollection` matching this one or None
         :return:
         """
-        self.raise_error_if_data_maps_are_incomparable(other_grid)
+        self.raise_error_if_datamaps_are_incomparable(other_datamap2d)
 
-        new_grid = DataMap2D.get_copy_of(self)
-        new_grid.reset_all_values()
+        new_datamap2d = DataMap2D.get_copy_of(self)
+        new_datamap2d.reset_all_values()
 
         dimensions = self.mutable_matrix.shape
 
         for latitude_index in range(0, dimensions[0]):
             for longitude_index in range(0, dimensions[1]):
-                new_value = function( self.get_value_by_index(latitude_index, longitude_index), other_grid.get_value_by_index(latitude_index, longitude_index) )
-                new_grid.set_value_by_index(latitude_index, longitude_index, new_value)
+                new_value = function( self.get_value_by_index(latitude_index, longitude_index),
+                                      other_datamap2d.get_value_by_index(latitude_index, longitude_index))
+                new_datamap2d.set_value_by_index(latitude_index, longitude_index, new_value)
 
-        return new_grid
+        return new_datamap2d
 
-
-    def elementwise_multiply_grids(self, other_grid):
+    def elementwise_multiply_datamaps(self, other_datamap2d):
         """
-        Multiplies the two grids element-wise (i.e. at each location) and returns a new :class:`DataMap2D`
-        containing the result. The grids must be comparable (i.e. have the same lat/long bounds).
+        Multiplies the two :class:`DataMap2D` objects element-wise (i.e. at each location) and returns a new
+        :class:`DataMap2D` containing the result. The objects must be comparable (i.e. have the same lat/long bounds).
         """
-        self.raise_error_if_data_maps_are_incomparable(other_grid)
+        self.raise_error_if_datamaps_are_incomparable(other_datamap2d)
 
-        new_grid = DataMap2D.get_copy_of(self)
-        new_grid.mutable_matrix = numpy.multiply(self.mutable_matrix, other_grid.mutable_matrix)
+        new_datamap2d = DataMap2D.get_copy_of(self)
+        new_datamap2d.mutable_matrix = numpy.multiply(self.mutable_matrix, other_datamap2d.mutable_matrix)
 
-        return new_grid
-
+        return new_datamap2d
 
     def make_map(self, *args, **kwargs):
-        """Return a :class:`map.Map` with the data from this grid. Please refer to :meth:`map.Map.__init__` for more
-        information."""
+        """Return a :class:`map.Map` with the data from this :class:`DataMap2D`. Please refer to
+        :meth:`map.Map.__init__` for more information."""
         return Map(self, *args, **kwargs)
 
-
-    def add_to_kml(self, kml=None, geometry_modification_function=None, include_polygon_function=None, filename=None, save=True):
+    def add_to_kml(self, kml=None, geometry_modification_function=None, include_polygon_function=None, filename=None,
+                   save=True):
         """
         Add the data to a KML object for plotting with e.g. Google Earth.
 
@@ -413,32 +414,64 @@ class DataMap2D(object):
         self.log = getModuleLogger(self)
 
 
-
-
 class DataMap2DContinentalUnitedStates(DataMap2D):
     """:class:`DataMap2D` with presets bounds for the continental United States."""
     @classmethod
-    def make_grid(cls, num_latitude_divisions=200, num_longitude_divisions=300):
+    def create(cls, num_latitude_divisions=200, num_longitude_divisions=300):
+        """
+        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to the continental United States.
+
+        :param num_latitude_divisions: number of latitude points per longitude
+        :type num_latitude_divisions: int
+        :param num_longitude_divisions: number of longitude points per latitude
+        :type num_longitude_divisions: int
+        :return:
+        :rtype: :class:`DataMap2DContinentalUnitedStates`
+        """
         latitude_bounds = [24.5, 49.38]
         longitude_bounds = [-124.77, -66]
-        return DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions)
+        return DataMap2D.from_specification(latitude_bounds, longitude_bounds, num_latitude_divisions,
+                                            num_longitude_divisions)
+
 
 class DataMap2DBayArea(DataMap2D):
     """:class:`DataMap2D` with presets bounds for the Bay Area of the United States."""
     @classmethod
-    def make_grid(cls, num_latitude_divisions=50, num_longitude_divisions=50):
+    def create(cls, num_latitude_divisions=50, num_longitude_divisions=50):
+        """
+        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to the continental United States.
+
+        :param num_latitude_divisions: number of latitude points per longitude
+        :type num_latitude_divisions: int
+        :param num_longitude_divisions: number of longitude points per latitude
+        :type num_longitude_divisions: int
+        :return:
+        :rtype: :class:`DataMap2DBayArea`
+        """
         latitude_bounds = [37.2, 38.4]
         longitude_bounds = [-123.2, -121]
-        return DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions)
+        return DataMap2D.from_specification(latitude_bounds, longitude_bounds, num_latitude_divisions,
+                                            num_longitude_divisions)
+
 
 class DataMap2DWisconsin(DataMap2D):
     """:class:`DataMap2D` with presets bounds for Wisconsin, United States."""
     @classmethod
-    def make_grid(cls, num_latitude_divisions=50, num_longitude_divisions=50):
+    def create(cls, num_latitude_divisions=50, num_longitude_divisions=50):
+        """
+        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to the continental United States.
+
+        :param num_latitude_divisions: number of latitude points per longitude
+        :type num_latitude_divisions: int
+        :param num_longitude_divisions: number of longitude points per latitude
+        :type num_longitude_divisions: int
+        :return:
+        :rtype: :class:`DataMap2DWisconsin`
+        """
         latitude_bounds = [42.5, 47]
         longitude_bounds = [-93.5, -87]
-        return DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions)
-
+        return DataMap2D.from_specification(latitude_bounds, longitude_bounds, num_latitude_divisions,
+                                            num_longitude_divisions)
 
 
 class DataMap3D(object):
@@ -449,32 +482,32 @@ class DataMap3D(object):
         self.log = getModuleLogger(self)
 
     @classmethod
-    def from_DataMap2D(cls, template_data_map_2d, layer_descr_list):
+    def from_DataMap2D(cls, template_datamap2d, layer_descr_list):
         """
-        Creates a :class:`DataMap3D` object by replicating the :template_data_map_2d: object `len(layer_descr_list)`
+        Creates a :class:`DataMap3D` object by replicating the :template_datamap2d: object `len(layer_descr_list)`
         times.
 
-        :param template_data_map_2d: a data map which provides the default values (e.g. latitude and longitude bounds, \
+        :param template_datamap2d: a data map which provides the default values (e.g. latitude and longitude bounds, \
         number of divisions) for each layer of the map
-        :type template_data_map_2d: :class:`DataMap2D`
+        :type template_datamap2d: :class:`DataMap2D`
         :param layer_descr_list: description (key) for each layer; must be unique
         :type layer_descr_list: list
         :return:
         :rtype: :class:`DataMap3D`
         """
         obj = cls()
-        obj._initialize_layers(template_data_map_2d, layer_descr_list)
+        obj._initialize_layers(template_datamap2d, layer_descr_list)
         return obj
 
-    def _initialize_layers(self, template_data_map_2d, layer_descr_list):
+    def _initialize_layers(self, template_datamap2d, layer_descr_list):
         """Internal function to create the layers from the template and the list of descriptions."""
         self._layers = {}
         self._layer_descr_list = layer_descr_list
 
-        data_map_class = template_data_map_2d.__class__
+        datamap_class = template_datamap2d.__class__
 
         for layer_descr in layer_descr_list:
-            self._layers[layer_descr] = data_map_class.get_copy_of(template_data_map_2d)
+            self._layers[layer_descr] = datamap_class.get_copy_of(template_datamap2d)
 
         if len(self._layers.keys()) is not len(layer_descr_list):
             self.log.warning("Incorrect number of layers created; duplicate keys?")
@@ -574,7 +607,7 @@ class DataMap3D(object):
             self.log.error("Can't add layers: at least one is None")
             return
 
-        destination_data_map = DataMap2D.from_existing_grid(list_of_layers[0], 0)
+        destination_data_map = DataMap2D.from_existing_DataMap2D(list_of_layers[0], 0)
 
         for layer in list_of_layers:
             destination_data_map.mutable_matrix += layer.mutable_matrix

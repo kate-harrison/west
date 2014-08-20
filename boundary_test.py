@@ -46,7 +46,7 @@
 # num_latitude_divisions = 200
 # num_longitude_divisions = 300
 #
-# grid = data_map.DataMap2D.from_grid_specification(latitude_bounds, longitude_bounds,
+# dm = data_map.DataMap2D.from_specification(latitude_bounds, longitude_bounds,
 #                                                           num_latitude_divisions, num_longitude_divisions)
 #
 #
@@ -55,16 +55,16 @@
 # for lat_index in range(num_latitude_divisions):
 #     print(lat_index)
 #     for lon_index in range(num_longitude_divisions):
-#         location = (grid.get_latitude_by_index(lat_index), grid.get_longitude_by_index(lon_index))
+#         location = (dm.get_latitude_by_index(lat_index), dm.get_longitude_by_index(lon_index))
 #         inside = b.location_inside_boundary(location)
-#         grid.set_value_by_index(lat_index, lon_index, inside)
+#         dm.set_value_by_index(lat_index, lon_index, inside)
 #
 #
 # with open("is_in_region200x300.pcl", "w") as f:
-#     pickle.dump(grid, f)
+#     pickle.dump(dm, f)
 #
 #
-# map = grid.make_map()
+# map = dm.make_map()
 # map.blocking_show()
 
 
