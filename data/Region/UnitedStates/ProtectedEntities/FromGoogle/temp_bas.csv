@@ -1,0 +1,5 @@
+uid,entity_type,channel,registrar,callsign,fccid,serial_num,rcamsl_meters,rcagl_meters,rchaat_meters,location_type,latitude,longitude,azimuth,circle_radius_meters,keyhole_radius_meters,geometry,parent_callsign,parent_latitude,parent_longitude,registrant,event_start,event_end,event_duration_secs,event_rrule
+140603SPBR0000008,TEMP_BAS,45,SPBR,WABC-TV,,,,,,KEYHOLE,36.171909,-115.139969,-22.1,8000,80000,,,47.678581,-122.131577,"|dfhg|dfhfh\nRedmond, WA 4564654\nUS||456545465",2014/06/05-15:00:00.000,2014/06/12-16:00:00.000,,
+131031TELC0000002,TEMP_BAS,25,TELC,KDUH-TV,,,,,,KEYHOLE,42.750000,-104.440000,-90.0,8000,819,,,42.750000,-104.450000,Telcordia Technologies|TEST  TEST|||,2014/02/26-22:05:00.000,2014/03/11-23:50:00.000,,
+130617TELC0000001,TEMP_BAS,24,TELC,KSNW,,,,,,KEYHOLE,37.693415,-97.335618,-71.5,8000,1357,,,37.697286,-97.350209,FCC|Alan Stillwell|||,2013/06/17-12:00:00.000,2013/06/24-22:00:00.000,,
+131030TELC0000001,TEMP_BAS,24,TELC,KSNW,,,,,,KEYHOLE,37.693415,-97.335618,-71.5,8000,1357,,,37.697286,-97.350209,FCC|Alan Stillwell|||,2013/10/30-16:30:00.000,2013/11/07-04:30:00.000,,

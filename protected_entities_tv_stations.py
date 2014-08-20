@@ -1,10 +1,10 @@
 from abc import abstractmethod
-# from doc_inherit import doc_inherit
 from protected_entities import ProtectedEntities
 from protected_entity_tv_station import ProtectedEntityTVStation
 import os
 import helpers
 import csv
+import configuration
 
 
 class ProtectedEntitiesTVStations(ProtectedEntities):
@@ -118,7 +118,8 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
     """This class contains TV stations as read from the Google data."""
 
     def source_filename(self):
-        return os.path.join("data", "Google data", "tv_us.csv")
+        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        return os.path.join(base_directory, 'FromGoogle', 'tv_us.csv')
 
     def source_name(self):
         return "Google TVWS database download [" \

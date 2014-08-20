@@ -19,9 +19,9 @@ include/*
 *.kml
 *.pdf
 *.pyc
+*.zip
 
 #Project files
-data/*
 old/*
 old_py/*
 output/*

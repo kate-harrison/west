@@ -2,6 +2,7 @@ import os
 import csv
 from protected_entity_plmrs import ProtectedEntityPLMRS
 from protected_entities import ProtectedEntities
+import configuration
 
 class ProtectedEntitiesPLMRS(ProtectedEntities):
     """
@@ -16,7 +17,8 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
     """
 
     def source_filename(self):
-        return os.path.join("data", "Google data", "plcmrs.csv")
+        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        return os.path.join(base_directory, 'FromGoogle', 'plcmrs.csv')
 
     def source_name(self):
         return "Google TVWS database download [" \

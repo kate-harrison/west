@@ -5,6 +5,7 @@ from custom_logging import getModuleLogger
 from shapely.geometry import Point, shape
 import shapely
 import fiona
+import configuration
 
 class Boundary(object):
     """
@@ -195,8 +196,7 @@ class BoundaryContinentalUnitedStatesWithStateBoundaries(BoundaryShapefile):
     """
 
     def boundary_filename(self):
-        #base_dir = self.simulation.base_data_directory()   # TODO: update this
-        base_dir = "data"
+        base_dir = configuration.paths['UnitedStates']['boundaries']
         return path.join(base_dir, "cb_2013_us_state_500k", "cb_2013_us_state_500k.shp")
 
     def _omitted_shapes(self):
@@ -211,8 +211,7 @@ class BoundaryUnitedStates(BoundaryShapefile):
     # http://www.census.gov/geo/maps-data/data/cbf/cbf_nation.html
 
     def boundary_filename(self):
-        #base_dir = self.simulation.base_data_directory()   # TODO: update this
-        base_dir = "data"
+        base_dir = configuration.paths['UnitedStates']['boundaries']
         return path.join(base_dir, "cb_2013_us_nation_20m", "cb_2013_us_nation_20m.shp")
 
     def _geometry_name_field_str(self):

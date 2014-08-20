@@ -2,6 +2,7 @@ from protected_entities import ProtectedEntities
 from protected_entity_radio_astronomy_site import ProtectedEntityRadioAstronomySite
 import os
 import csv
+import configuration
 
 class ProtectedEntitiesRadioAstronomySites(ProtectedEntities):
     """
@@ -14,7 +15,8 @@ class ProtectedEntitiesRadioAstronomySitesUnitedStates(ProtectedEntitiesRadioAst
     Radioastronomy sites for the United States. Defined in section 15.712(h) of the FCC regulations.
     """
     def source_filename(self):
-        return os.path.join("data", "Radioastronomy sites (FCC regulations 2012) - Sheet1.csv")
+        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        return os.path.join(base_directory, "Radioastronomy sites (FCC regulations 2012) - Sheet1.csv")
 
     def source_name(self):
         return "FCC 2012 regulations: section 15.712(h)"
