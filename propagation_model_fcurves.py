@@ -129,10 +129,9 @@ class PropagationModelFcurves(PropagationModel):
 #   LIBRARY FUNCTIONS
 ####
     def _initialize_fcurve_library_and_function(self):
-        cdll.LoadLibrary(os.path.join("propagation_models", "fcurves", "curves_subroutines.so"))
-        fcurves_lib = CDLL("curves_subroutines.so")
-        # cdll.LoadLibrary(os.path.join("propagation_models", "fcurves", "subroutines.so"))
-        # fcurves_lib = CDLL("subroutines.so")
+        shared_object_path = os.path.join("propagation_models", "fcurves", "curves_subroutines.so")
+        cdll.LoadLibrary(shared_object_path)
+        fcurves_lib = CDLL(shared_object_path)
         self._initialize_library_functions(fcurves_lib)
 
     def _initialize_library_functions(self, fcurves_lib):
