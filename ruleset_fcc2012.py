@@ -213,6 +213,8 @@ class RulesetFcc2012(Ruleset):
         # Check adjacent-channel exclusions
         adjacent_channel_stations = []
         for adj_chan in [device_channel-1, device_channel+1]:
+            if not adj_chan in region.get_channel_list():
+                continue
             if helpers.channels_are_adjacent_in_frequency(region, adj_chan, device_channel):
                 adjacent_channel_stations += tv_stations_container.get_list_of_entities_on_channel(adj_chan)
 
