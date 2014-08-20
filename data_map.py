@@ -2,30 +2,11 @@ from custom_logging import getModuleLogger
 import numpy
 from map import Map
 import simplekml
+import pickle
 
 
 class DataMap2D(object):
     """Keeps track of DataPoints whose (latitude, longitude)s naturally belong on a grid. Two-dimensional."""
-    def __getstate__(self):
-        print self.__dict__
-        #self.__delattr__(self, log)
-        del self.log
-        return self.__dict__
-    def __setstate__(self, d):
-        self.__dict__.update(d)
-        self.log = getModuleLogger(self)
-
-    # matrix: m = [ 1 2 3
-    #               4 5 6
-    #               7 8 9 ]
-    #
-    # m[0,0] = m[0][0] = 1
-    # m[0,1] = 2
-    # m[1,0] = 4
-
-    # def __init__(self, initial_points, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions):
-    #     super(DataMap2D, self).__init__()
-
     def __init__(self):
         self.log = getModuleLogger(self)
 
@@ -370,18 +351,13 @@ class DataMap2D(object):
 
             poly = kml.newpolygon()
 
-            # (0, 0), (1, 1), (1, 0)])
             max_lat = center_lat + latitude_width/2
             min_lat = center_lat - latitude_width/2
             max_lon = center_lon + longitude_width/2
             min_lon = center_lon - longitude_width/2
-            # poly.outerboundaryis = [ (min_lon, min_lat), (min_lon, max_lat),
-            #     (max_lon, min_lat), (max_lon, max_lat)]
             poly.outerboundaryis = [ (min_lon, max_lat), (max_lon, max_lat), (max_lon, min_lat), (min_lon, min_lat)]
 
             poly.description = str(value)
-            # poly.style.polystyle.color = simplekml.Color.red
-            # poly.style.polystyle.outline = 1
 
             if geometry_modification_function is not None:
                 geometry_modification_function(poly, value)
@@ -401,11 +377,42 @@ class DataMap2D(object):
 
         return kml
 
-    def save_to_file(self, filename):       # TODO: write this function
-            pass
+    def to_pickle(self, filename):
+        """
+        Save the DataMap2D to a pickle with the specified ``filename``. See also: :meth:`from_pickle`.
 
-    def load_from_file(self, filename):     # TODO: write this function
-        pass
+        :param filename: destination filename
+        :type filename: str
+        :return: None
+        """
+        with open(filename, "w") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def from_pickle(cls, filename):
+        """
+        Loads the DataMap2D from a pickle with the specified ``filename``. See also: :meth:`to_pickle`.
+
+        :param filename: destination filename
+        :type filename: str
+        :return:
+        :rtype: :class:`DataMap2D`
+        """
+        with open(filename, "r") as f:
+            return pickle.load(f)
+
+    # Helper functions required for pickling
+    # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving and
+    # add them back when loading the object
+    def __getstate__(self):
+        del self.log
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+        self.log = getModuleLogger(self)
+
+
 
 
 class DataMap2DContinentalUnitedStates(DataMap2D):
@@ -598,8 +605,37 @@ class DataMap3D(object):
         for layer in self._layers.values():
             layer.reset_all_values(fill_value)
 
-    def save_to_file(self, filename):       # TODO: write this function
-        pass
+    def to_pickle(self, filename):
+        """
+        Save the DataMap3D to a pickle with the specified ``filename``. See also: :meth:`from_pickle`.
 
-    def load_from_file(self, filename):     # TODO: write this function
-        pass
+        :param filename: destination filename
+        :type filename: str
+        :return: None
+        """
+        with open(filename, "w") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def from_pickle(cls, filename):
+        """
+        Loads the DataMap3D from a pickle with the specified ``filename``. See also: :meth:`to_pickle`.
+
+        :param filename: destination filename
+        :type filename: str
+        :return:
+        :rtype: :class:`DataMap3D`
+        """
+        with open(filename, "r") as f:
+            return pickle.load(f)
+
+    # Helper functions required for pickling
+    # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving and
+    # add them back when loading the object
+    def __getstate__(self):
+        del self.log
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+        self.log = getModuleLogger(self)
