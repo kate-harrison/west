@@ -33,9 +33,9 @@ class PropagationModelFcurves(PropagationModel):
 
          * Supported frequencies:
 
-             * 54 - 82 MHz (US lower VHF: channels 2-6)
-             * 174 - 210 MHz (US upper VHF: channels 7-13)
-             * 470 - 884 MHz (US UHF: channels 14-84)
+             * 54 - 88 MHz (US lower VHF: channels 2-6)
+             * 174 - 216 MHz (US upper VHF: channels 7-13)
+             * 470 - 890 MHz (US UHF: channels 14-84)
 
          * A ValueError is raised if using an unsupported frequency.
          * There are no actual code-based limitations on these frequencies, only model-imposed limitations (i.e. the
@@ -487,6 +487,9 @@ class PropagationModelFcurvesWithoutTerrain(PropagationModelFcurves):
     """
     def requires_terrain(self):
         return False
+
+    def requires_tx_height(self):
+        return True
 
     def requires_tx_location(self):
         return False

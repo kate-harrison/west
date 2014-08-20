@@ -62,8 +62,10 @@ class PropagationModel(object):
         :return: pathloss coefficient
         :rtype: float
         """
-        if not self._has_required_parameters(frequency, tx_height, rx_height, tx_location, rx_location, curve_enum):
-            raise AttributeError("Missing one or more required parameters.")
+        has_all_params, error_message = self._has_required_parameters(frequency, tx_height, rx_height, tx_location,
+                                                                      rx_location, curve_enum)
+        if not has_all_params:
+            raise AttributeError("Missing one or more required parameters: %s" % error_message)
 
         self._raise_error_if_input_invalid(frequency, tx_height, rx_height, tx_location, rx_location, curve_enum,
                                            distance=distance)
@@ -136,8 +138,10 @@ class PropagationModel(object):
         :rtype: float
         """
 
-        if not self._has_required_parameters(frequency, tx_height, rx_height, tx_location, rx_location, curve_enum):
-            raise AttributeError("Missing one or more required parameters.")
+        has_all_params, error_message = self._has_required_parameters(frequency, tx_height, rx_height, tx_location,
+                                                                      rx_location, curve_enum)
+        if not has_all_params:
+            raise AttributeError("Missing one or more required parameters: %s" % error_message)
 
         self._raise_error_if_input_invalid(frequency, tx_height, rx_height, tx_location, rx_location, curve_enum,
                                            pathloss_coefficient=pathloss_coefficient)
@@ -278,30 +282,24 @@ class PropagationModel(object):
         :rtype: boolean
         """
         if self.requires_frequency() and frequency is None:
-            self.log.error("Missing frequency")
-            return False
+            return False, "missing frequency"
 
         if self.requires_tx_height() and tx_height is None:
-            self.log.error("Missing transmitter height")
-            return False
+            return False, "missing transmitter height"
 
         if self.requires_rx_height() and rx_height is None:
-            self.log.error("Missing receiver height")
-            return False
+            return False, "missing receiver height"
 
         if self.requires_tx_location() and (tx_location is None or len(tx_location) is not 2):
-            self.log.error("Missing or invalid transmitter location")
-            return False
+            return False, "missing or invalid transmitter location"
 
         if self.requires_rx_location() and (rx_location is None or len(rx_location) is not 2):
-            self.log.error("Missing or invalid receiver location")
-            return False
+            return False, "missing or invalid receiver location"
 
         if self.requires_curve_enum() and curve_enum is None:
-            self.log.error("Missing curve enum")
-            return False
+            return False, "missing curve enum"
 
-        return True
+        return True, None
 
     def _raise_error_if_input_invalid(self, frequency, tx_height, rx_height, tx_location, rx_location, curve_enum,
                                       distance=None, pathloss_coefficient=None):
