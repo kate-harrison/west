@@ -22,14 +22,10 @@ inheritance_warning = ".. warning:: Note that the common interface is defined by
                       "Inherited functions (e.g. the interface) are not shown in documentation of derived classes."
 
 modules = []
-# ==========================================================
 
-# Contents
-# ========
-#
-# .. toctree::
-# :maxdepth: 2
-
+print "Removing old *.rst files."
+for filename in [f for f in os.listdir(rst_directory) if f.endswith(".rst")]:
+    os.remove(filename)
 
 
 def generate_rst(module_name):
