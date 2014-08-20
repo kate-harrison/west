@@ -23,12 +23,14 @@ def get_cochannel_and_first_adjacent(region, channel):
     return affected_channels
 
 def channels_are_adjacent_in_frequency(region, chan1, chan2):
-    (low1, high1) = region.get_frequency_bounds(chan1)
-    (low2, high2) = region.get_frequency_bounds(chan2)
-    # If the channel is undefined for the region, we will return False
-    if any([bound is None for bound in [low1, low2, high1, high2]]):
+    try:
+        (low1, high1) = region.get_frequency_bounds(chan1)
+        (low2, high2) = region.get_frequency_bounds(chan2)
+        return abs(low1 - high2) < .001 or abs(low2 - high1) < .001
+    except ValueError:
+        # If the channel is undefined for the region, it will return a ValueError. In that case,
+        # the channels are defined as not being adjacent.
         return False
-    return abs(low1 - high2) < .001 or abs(low2 - high1) < .001
 
 
 def add_bounding_box_to_kml(kml, bounding_box):
