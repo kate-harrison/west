@@ -53,32 +53,81 @@ class ProtectedEntities(object):
         self._entities = []
 
     def _add_entity(self, new_entity):
-        """Add a new protected entity."""
+        """
+        Add a new protected entity. Does NOT update any internal caches. The caller is expected to call
+        :meth:`_refresh_cached_data` after adding all entities.
+
+        :param new_entity: the entity to be added
+        :type new_entity: :class:`protected_entity.ProtectedEntity`
+        """
         self._entities.append(new_entity)
 
-    def get_list_of_entities_on_channel(self, channel):
+    def add_entity(self, new_entity, update_internal_data_caches=True):
         """
-        Returns an empty list if channel is not an attribute of this type of ProtectedEntity.
+        Add a new protected entity. By default, this function updates internal data caches. If adding many entities in
+        succession, consider updating the caches only when adding the last entity.
+
+        :param new_entity: the entity to be added
+        :type new_entity: :class:`protected_entity.ProtectedEntity`
+        :param update_internal_data_caches: if True, updates internal data caches via :meth:`_refresh_cached_data`.
+        :type update_internal_data_caches: bool
+        """
+        self._add_entity(new_entity)
+        if update_internal_data_caches:
+            self._refresh_cached_data()
+
+    def get_list_of_entities_on_channel(self, channel_number):
+        """
+        Returns an empty list if channel is not an attribute of this type of ProtectedEntity. Raises a ValueError if
+        the channel number is unsupported by the :class:`region.Region`.
 
         :param channel:
         :return:
         """
-        return [entity for entity in self.list_of_entities() if entity.get_channel() == channel]
+        if channel_number not in self.region.get_channel_list():
+            raise ValueError("Unsupported channel number: %d" % channel_number)
+        return [entity for entity in self.list_of_entities() if entity.get_channel() == channel_number]
+
+    def remove_entities(self, filter_function):
+        """
+        Removes entities for which ``filter_function(entity)`` does *not* return True or a "truthy" value.
+
+        :param filter_function: handle to a function which returns True for entities which should be kept and\
+         False otherwise; takes a single argument of type :class:`ProtectedEntity`.
+        :return: None
+        """
+        old_entities = self._entities
+        self._reset_entities()
+        for entity in old_entities:
+            if filter_function(entity):
+                self._add_entity(entity)
+
+        self._refresh_cached_data()
 
 
-    def export_to_kml(self, kml_filename, save=True, filter_fcn=None):
+    def _refresh_cached_data(self):
+        """
+        Use this function to create/refresh any data that might be cached in the ProtectedEntities object.
+        """
+        pass
+
+
+    def export_to_kml(self, kml_filename, save=True, filter_function=None):
             """
-            Exports the ProtectedEntities as a KML file.
+            Exports the ProtectedEntities as a KML file. If ``filter_function`` is provided, includes only entities for
+            which ``filter_function(entity)`` returns True or a "truthy" value.
 
             :param save: if True, saves the file using the filename provided by :meth:`kml_filename`.
             :type save: boolean
+            :param filter_function: handle to a function which returns True for entities which should be kept and\
+             False otherwise; takes a single argument of type :class:`ProtectedEntity`.
             :return:
             :rtype: KML object (e.g. output from :meth:`simplekml.Kml`)
             """
 
             list_of_entities = self.list_of_entities()
-            if filter_fcn is not None:
-                list_of_entities = [entity for entity in list_of_entities if filter_fcn(entity)]
+            if filter_function is not None:
+                list_of_entities = [entity for entity in list_of_entities if filter_function(entity)]
 
             kml = simplekml.Kml()
             for entity in list_of_entities:

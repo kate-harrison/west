@@ -12,7 +12,7 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
 
     def __init__(self, *args, **kwargs):
         super(ProtectedEntitiesTVStations, self).__init__(*args, **kwargs)
-        self._categorize_stations()
+        self._refresh_cached_data()
 
     @abstractmethod
     def digital_tv_types(self):
@@ -30,19 +30,27 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
         """Returns a list of TV station types which will be ignored."""
         return
 
-    def get_list_of_entities_on_channel(self, channel):
-        return self.stations_by_channel[channel]
+    def get_list_of_entities_on_channel(self, channel_number):
+        if channel_number not in self.region.get_channel_list():
+            raise ValueError("Unsupported channel number: %d" % channel_number)
+        return self.stations_by_channel[channel_number]
 
 
     def stations(self):
         return self._entities
 
-    def _categorize_stations(self):
+    def _refresh_cached_data(self):
         """Put the stations into a few dictionaries for easy access."""
         self.log.debug("Categorizing TV stations")
         self.stations_by_tx_type = {}
         self.stations_by_channel = {}
         self.stations_by_DA = {'analog': [], 'digital': []}
+
+        # Pre-allocate the channels so that an empty list is returned even if there
+        # are no stations on that channel. Stations which have a channel not in the
+        # list will not be added.
+        for channel_number in self.region.get_channel_list():
+            self.stations_by_channel[channel_number] = []
 
         for station in self.stations():
             channel = station.get_channel()
@@ -50,8 +58,9 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
             is_digital = station.is_digital()
 
             if channel not in self.stations_by_channel:
-                self.stations_by_channel[channel] = []
-            self.stations_by_channel[channel].append(station)
+                self.log.warning("Detected a station on an unsupported channel: %d" % channel)
+            else:
+                self.stations_by_channel[channel].append(station)
 
             if tx_type not in self.stations_by_tx_type:
                 self.stations_by_tx_type[tx_type] = []
