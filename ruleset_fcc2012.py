@@ -162,7 +162,8 @@ class RulesetFcc2012(Ruleset):
         :return: True if the location is whitespace; False otherwise
         :rtype: bool
         """
-        tv_stations_container = region.get_protected_entities_of_type(ProtectedEntitiesTVStations)
+        tv_stations_container = region.get_protected_entities_of_type(ProtectedEntitiesTVStations,
+                                                                      use_fallthrough_if_not_found=True)
         cochannel_stations = tv_stations_container.get_list_of_entities_on_channel(device_channel)
 
         for station in cochannel_stations:
@@ -264,7 +265,8 @@ class RulesetFcc2012(Ruleset):
         :return: True if the location is whitespace; False otherwise
         :rtype: bool
         """
-        plmrs_container = region.get_protected_entities_of_type(ProtectedEntitiesPLMRS)
+        plmrs_container = region.get_protected_entities_of_type(ProtectedEntitiesPLMRS,
+                                                                use_fallthrough_if_not_found=True)
         for plmrs_entry in plmrs_container.list_of_entities():
             if self.plmrs_is_protected(plmrs_entry, location, device_channel, region):
                 return False
@@ -298,7 +300,8 @@ class RulesetFcc2012(Ruleset):
             return ras_site.location_in_protected_polygon(device_location)
 
     def location_is_whitespace_radioastronomy_only(self, region, location):
-        ras_container = region.get_protected_entities_of_type(ProtectedEntitiesRadioAstronomySites)
+        ras_container = region.get_protected_entities_of_type(ProtectedEntitiesRadioAstronomySites,
+                                                              use_fallthrough_if_not_found=True)
         for ras_site in ras_container.list_of_entities():
             if self.radioastronomy_site_is_protected(ras_site, location):
                 return False
