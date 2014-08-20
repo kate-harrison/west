@@ -105,16 +105,6 @@ class Simulation(object):
     def turn_data_map_into_whitespace_map(self, is_whitespace_grid, channel, device=None):
         device = device or self._device
 
-        # TODO: move this check into the ruleset
-
-        if channel not in self._region.get_tvws_channel_list():
-            is_whitespace_grid.reset_all_values(False)
-            return is_whitespace_grid
-
-        if device.is_portable() and (channel not in self._region.get_portable_tvws_channel_list()):
-            is_whitespace_grid.reset_all_values(False)
-            return is_whitespace_grid
-
         return self._ruleset.turn_data_map_into_whitespace_map(self._region, is_whitespace_grid, channel, device)
 
 

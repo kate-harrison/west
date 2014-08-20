@@ -46,6 +46,36 @@ class RulesetFcc2012(Ruleset):
         return True
 
 ####
+#   BASIC WHITESPACE CALCULATIONS
+####
+    def _is_permissible_channel(self, region, channel, device):
+        """
+        Checks that ``channel`` is permissible for whitespace operation by ``device``. In particular, returns False if:
+
+          * ``channel`` is not a TVWS channel in the ``region`` or
+          * ``device`` is portable and ``channel`` is not in the portable TVWS channel list for the ``region``
+
+        :param region: region containing the protected entities
+        :type region: :class:`region.Region` object
+        :param channel: channel to be tested for whitespace
+        :type channel: int
+        :param device: the device which desires whitespace access
+        :type device: :class:`device.Device` object
+        :return: True if whitespace operation is allowed on this channel; False otherwise
+        :rtype: bool
+        """
+        if channel not in region.get_tvws_channel_list():
+            return False
+
+        if device.is_portable() and (channel not in region.get_portable_tvws_channel_list()):
+            return False
+
+        return True
+####
+#   END BASIC WHITESPACE CALCULATIONS
+####
+
+####
 #   TV STATION PROTECTION CALCULATIONS
 #   (separate section for protection tables)
 ####
@@ -145,7 +175,7 @@ class RulesetFcc2012(Ruleset):
         # Check if we are inside the protected contour
         return actual_distance_km <= (protection_distance_km + separation_distance_km)
 
-    def location_is_whitespace_tv_stations_only(self, region, location, device_channel, device_haat):
+    def location_is_whitespace_tv_stations_only(self, region, location, device_channel, device):
         """
         Determines whether a location is considered whitespace *on the basis of TV station protections alone.*
 
@@ -157,19 +187,30 @@ class RulesetFcc2012(Ruleset):
         :type location: tuple of floats
         :param device_channel: channel to be tested for whitespace
         :type device_channel: int
-        :param device_haat: height above average terrain (HAAT) of the device, in meters
-        :type device_haat: float
+        :param device: device that proposes operating in the whitespaces
+        :type device: :class:`device.Device`
         :return: True if the location is whitespace; False otherwise
         :rtype: bool
         """
+        if device.is_portable():
+            device_haat = 1
+        else:
+            device_haat = device.get_haat()
+
         tv_stations_container = region.get_protected_entities_of_type(ProtectedEntitiesTVStations,
                                                                       use_fallthrough_if_not_found=True)
-        cochannel_stations = tv_stations_container.get_list_of_entities_on_channel(device_channel)
 
+        # Check cochannel exclusions
+        cochannel_stations = tv_stations_container.get_list_of_entities_on_channel(device_channel)
         for station in cochannel_stations:
             if self.cochannel_tv_station_is_protected(station, location, device_haat):
                 return False
 
+        # Portable devices are not subject to adjacent-channel exclusions
+        if device.is_portable():
+            return True
+
+        # Check adjacent-channel exclusions
         adjacent_channel_stations = []
         for adj_chan in [device_channel-1, device_channel+1]:
             if helpers.channels_are_adjacent_in_frequency(region, adj_chan, device_channel):
@@ -341,10 +382,16 @@ class RulesetFcc2012(Ruleset):
 
         #protected_entities = region.protected_entities()
 
+        if not self._is_permissible_channel(region, channel, device):
+            return False
+
         if not self.location_is_whitespace_tv_stations_only(region, location, channel, device_haat):
             return False
 
         if not self.location_is_whitespace_plmrs_only(region, location, channel):
+            return False
+
+        if not self.location_is_whitespace_radioastronomy_only(region, location):
             return False
 
         return True
@@ -377,11 +424,32 @@ class RulesetFcc2012(Ruleset):
             # Initialize to True so that all points will be evaluated
             is_whitespace_grid.reset_all_values(True)
 
+        self.apply_channel_restrictions_to_map(region, is_whitespace_grid, channel, device)
         self.apply_radioastronomy_exclusions_to_map(region, is_whitespace_grid)
         self.apply_plmrs_exclusions_to_map(region, is_whitespace_grid, channel)
         self.apply_tv_exclusions_to_map(region, is_whitespace_grid, channel, device)
 
         return is_whitespace_grid
+
+    def apply_channel_restrictions_to_map(self, region, is_whitespace_grid, channel, device):
+        """
+        Applies simple channel-based restrictions to the map. In particular, resets the grid to False values if:
+
+          * ``channel`` is not a TVWS channel in the ``region`` or
+          * ``device`` is portable and ``channel`` is not in the portable TVWS channel list for the ``region``
+
+        :param region: region containing the protected entities
+        :type region: :class:`region.Region` object
+        :param is_whitespace_grid: grid to be filled with the output
+        :type is_whitespace_grid: :class:`data_map.DataMap2D` object
+        :param channel: channel to be tested for whitespace
+        :type channel: int
+        :param device: the device which desires whitespace access
+        :type device: :class:`device.Device` object
+        :return: None
+        """
+        if not self._is_permissible_channel(region, channel, device):
+            is_whitespace_grid.reset_all_values(False)
 
     def apply_tv_exclusions_to_map(self, region, is_whitespace_grid, channel, device):
         """
@@ -410,7 +478,7 @@ class RulesetFcc2012(Ruleset):
                     continue
 
                 is_whitespace_grid.mutable_matrix[lat_idx, lon_idx] = \
-                    self.location_is_whitespace_tv_stations_only(region, (lat, lon), channel, device.get_haat())
+                    self.location_is_whitespace_tv_stations_only(region, (lat, lon), channel, device)
 
     def apply_plmrs_exclusions_to_map(self, region, is_whitespace_grid, channel):
         """
@@ -525,8 +593,8 @@ class RulesetFcc2012(Ruleset):
          terrain (HAAT). The values are given in the table of section 15.712(a)(2) of the FCC's rules and the table
          is implemented in this function.
 
-         .. note:: Values outside of the defined table (i.e. HAAT > 250 meters) will log a warning and return the value
-         for 250 meters.
+         .. note:: Values outside of the defined table (i.e. HAAT > 250 meters) will log a warning and return the \
+            value for 250 meters.
 
         :param device_haat: whitespace device's height above average terrain (HAAT) in meters
         :type device_haat: float
@@ -562,8 +630,8 @@ class RulesetFcc2012(Ruleset):
          average terrain (HAAT). The values are given in the table of section 15.712(a)(2) of the FCC's rules and the
          table is implemented in this function.
 
-         .. note:: Values outside of the defined table (i.e. HAAT > 250 meters) will log a warning and return the value
-         for 250 meters.
+         .. note:: Values outside of the defined table (i.e. HAAT > 250 meters) will log a warning and return the \
+            value for 250 meters.
 
         :param device_haat: whitespace device's height above average terrain (HAAT) in meters
         :type device_haat: float
