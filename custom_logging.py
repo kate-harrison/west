@@ -61,7 +61,7 @@ def get_colored_formatter():
 
 
 
-base_logger = logging.getLogger("base")
+base_logger = logging.getLogger("")
 base_logger.setLevel(logging.DEBUG)
 
 _ch = logging.StreamHandler()
@@ -75,7 +75,6 @@ base_logger.addHandler(_ch)
 def getModuleLogger(obj):
     module_name = obj.__class__.__name__
     new_logger = base_logger.getChild(module_name)
-    new_logger.addHandler(_ch)
     return new_logger
 
 def changeLogLevel(new_log_level):
