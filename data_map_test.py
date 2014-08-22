@@ -50,10 +50,24 @@
 
 import pickle
 # import simplekml
-from data_map import DataMap3D
+from data_map import DataMap2D
+# from data_map import DataMap3D
 
 with open("is_in_region200x300.pcl", "r") as f:
     dm = pickle.load(f)
+
+    dm2 = DataMap2D.from_existing_DataMap2D(dm, dm.mutable_matrix)
+
+    latitude_bounds = [42.5, 47]
+    longitude_bounds = [-93.5, -87]
+    sm = dm2.generate_submap(latitude_bounds, longitude_bounds)
+    import numpy
+    sm.mutable_matrix = sm.mutable_matrix * 10
+    def add_matrices(x,y):
+        return numpy.maximum(x,y)
+    dm2.reintegrate_submap(sm, add_matrices)
+    m = dm2.make_map()
+    m.blocking_show()
 
 
 # def poly_transformation_function(poly, value):
@@ -74,6 +88,6 @@ with open("is_in_region200x300.pcl", "r") as f:
 #                  include_polygon_function=include_polygon_function)
 
 
-dm3 = DataMap3D.from_DataMap2D(dm, [1, 2, 3])
-import pdb
-pdb.set_trace()
+# dm3 = DataMap3D.from_DataMap2D(dm, [1, 2, 3])
+# import pdb
+# pdb.set_trace()

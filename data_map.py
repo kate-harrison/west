@@ -3,6 +3,7 @@ import numpy
 from map import Map
 import simplekml
 import pickle
+import helpers
 
 
 class DataMap2D(object):
@@ -316,6 +317,9 @@ class DataMap2D(object):
 
         return new_datamap2d
 
+#####
+#   DATA EXPORT
+#####
     def make_map(self, *args, **kwargs):
         """Return a :class:`map.Map` with the data from this :class:`DataMap2D`. Please refer to
         :meth:`map.Map.__init__` for more information."""
@@ -412,6 +416,111 @@ class DataMap2D(object):
     def __setstate__(self, d):
         self.__dict__.update(d)
         self.log = getModuleLogger(self)
+#####
+#   END DATA EXPORT
+#####
+
+
+#####
+#   SUBMAPS
+#####
+    def generate_submap(self, latitude_bounds, longitude_bounds):
+        """
+        Generates a :class:`DataMap2D` which contains a subset of this DataMap2D's coordinates and data. The bounds of
+        the resulting submap will be greater than or equal to the bounds given as arguments (i.e. the submap will
+        contain the bounding points, though not necessarily as points themselves). In other words, the submap will
+        represent a region which is at least as large as the bounds given.
+
+        The original map is not altered when generating a submap.
+
+        See also: :meth:`reintegrate_submap`.
+
+        :param latitude_bounds: (min_latitude, max_latitude)
+        :param longitude_bounds: (min_longitude, max_longitude)
+        :return: data map which contains a subset of the data in this map
+        :rtype: :class:`DataMap2D`
+        """
+        (min_lat, max_lat) = latitude_bounds
+        if min_lat > max_lat:
+            raise ValueError("Max. latitude should be greater than min. latitude")
+
+        (min_lon, max_lon) = longitude_bounds
+        if min_lon > max_lon:
+            raise ValueError("Max. longitude should be greater than min. longitude")
+
+        lower_latitude_index = helpers.find_last_value_below_or_equal(self.latitudes, min_lat)
+        lower_longitude_index = helpers.find_last_value_below_or_equal(self.longitudes, min_lon)
+        upper_latitude_index = helpers.find_first_value_above_or_equal(self.latitudes, max_lat)
+        upper_longitude_index = helpers.find_first_value_above_or_equal(self.longitudes, max_lon)
+
+        if any([index is None for index in
+                [lower_latitude_index, lower_longitude_index, upper_latitude_index, upper_longitude_index]]):
+            raise ValueError("Given latitude/longitude bounds are out of bounds for this DataMap2D.")
+
+        num_latitude_divisions = upper_latitude_index - lower_latitude_index + 1
+        num_longitude_divisions = upper_longitude_index - lower_longitude_index + 1
+
+        actual_latitude_bounds = (self.latitudes[lower_latitude_index], self.latitudes[upper_latitude_index])
+        actual_longitude_bounds = (self.longitudes[lower_longitude_index], self.longitudes[upper_longitude_index])
+
+        submap = DataMap2D.from_specification(actual_latitude_bounds, actual_longitude_bounds, num_latitude_divisions,
+                                              num_longitude_divisions)
+
+        # Copy the submatrix from this DataMap2D into the submap
+        submap.mutable_matrix = self.mutable_matrix[lower_latitude_index:upper_latitude_index+1,
+                                lower_longitude_index:upper_longitude_index+1]
+
+        return submap
+
+    def reintegrate_submap(self, submap, integration_function):
+        """
+        Re-integrates the submap into this map by combining corresponding values according to ``integration_function``.
+        The integration function should take two arguments of type :class:`numpy.matrix` and output a
+        :class:`numpy.matrix`. The first matrix will contain the current values of this map and the second matrix will
+        contain values from the submap. Some examples::
+
+            my_data_map.reintegrate_submap(my_submap, integration_function=lambda x,y: x+y)
+            my_data_map.reintegrate_submap(my_submap, integration_function=numpy.logical_or)
+            my_data_map.reintegrate_submap(my_submap, integration_function=numpy.maximum)
+
+        .. note:: If the submap is not comparable (i.e. its coordinates are not a subset of this map's coordinates), \
+        integration will not be possible. To generate a comparable submap, use :meth:`generate_submap`.
+
+        See also: :meth:`generate_submap`
+
+        :param submap: submap to be reintegrated into this map (submap is not modified)
+        :type submap: :class:`DataMap2D`
+        :param integration_function: function which dictates how the two matrices should be combined
+        :type integration_function: function object
+        """
+
+        # Extract indices for the submatrix and do lots of error checking
+        if not isinstance(submap, DataMap2D):
+            raise TypeError("Expected a DataMap2D")
+
+        lower_latitude_index = helpers.find_first_value_approximately_equal(self.latitudes, submap.latitudes[0])
+        lower_longitude_index = helpers.find_first_value_approximately_equal(self.longitudes, submap.longitudes[0])
+        if lower_latitude_index is None or lower_longitude_index is None:
+            raise ValueError("Submap is not comparable (latitudes and/or longitudes differ)")
+        upper_latitude_index = lower_latitude_index + len(submap.latitudes)
+        upper_longitude_index = lower_longitude_index + len(submap.longitudes)
+
+        target_latitudes = self.latitudes[lower_latitude_index:upper_latitude_index+1]
+        target_longitudes = self.longitudes[lower_longitude_index:upper_longitude_index+1]
+
+        if not helpers.lists_are_almost_equal(submap.latitudes, target_latitudes) or \
+                not helpers.lists_are_almost_equal(submap.longitudes, target_longitudes):
+            raise ValueError("Submap is not comparable (latitudes and/or longitudes differ)")
+
+        # Update the internal matrix according to the combination function
+        self.mutable_matrix[lower_latitude_index:upper_latitude_index,
+        lower_longitude_index:upper_longitude_index] = integration_function(
+            self.mutable_matrix[lower_latitude_index:upper_latitude_index,
+            lower_longitude_index:upper_longitude_index],
+            submap.mutable_matrix)
+#####
+#   END SUBMAPS
+#####
 
 
 class DataMap2DContinentalUnitedStates(DataMap2D):
