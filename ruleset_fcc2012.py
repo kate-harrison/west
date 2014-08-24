@@ -275,6 +275,9 @@ class RulesetFcc2012(Ruleset):
         :return: True if the PLMRS entity is protected; False otherwise
         :rtype: bool
         """
+        if not plmrs_entry.location_in_bounding_box(location):
+            return False
+
         plmrs_channel = plmrs_entry.get_channel()
 
         is_cochannel = (plmrs_channel == device_channel)
@@ -309,10 +312,27 @@ class RulesetFcc2012(Ruleset):
         """
         plmrs_container = region.get_protected_entities_of_type(ProtectedEntitiesPLMRS,
                                                                 use_fallthrough_if_not_found=True)
-        for plmrs_entry in plmrs_container.list_of_entities():
+
+        # Check cochannel exclusions
+        cochannel_plmrs = plmrs_container.get_list_of_entities_on_channel(device_channel)
+        for plmrs_entry in cochannel_plmrs:
             if self.plmrs_is_protected(plmrs_entry, location, device_channel, region):
                 return False
+
+        # Check adjacent-channel exclusions
+        adjacent_channel_plmrs = []
+        for adj_chan in [device_channel-1, device_channel+1]:
+            if not adj_chan in region.get_channel_list():
+                continue
+            if helpers.channels_are_adjacent_in_frequency(region, adj_chan, device_channel):
+                adjacent_channel_plmrs += plmrs_container.get_list_of_entities_on_channel(adj_chan)
+
+        for plmrs_entry in adjacent_channel_plmrs:
+            if self.plmrs_is_protected(plmrs_entry, location, device_channel, region):
+                return False
+
         return True
+
 ####
 #   END PLMRS PROTECTION CALCULATIONS
 ####

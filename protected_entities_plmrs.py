@@ -10,7 +10,6 @@ class ProtectedEntitiesPLMRS(ProtectedEntities):
     """
 
 
-
 class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
     """
     PLMRS exclusions with data from Google
@@ -61,3 +60,26 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
                 new_plmrs_entry = ProtectedEntityPLMRS(self, self.get_mutable_region(), latitude, longitude, channel,
                                                        is_metro, description)
                 self._add_entity(new_plmrs_entry)
+
+    def _refresh_cached_data(self):
+        self.log.debug("Categorizing entities by channel")
+        self.entities_by_channel = {}
+
+        # Pre-allocate the channels so that an empty list is returned even if there
+        # are no stations on that channel. Stations which have a channel not in the
+        # list will not be added.
+        for channel_number in self.region.get_channel_list():
+            self.entities_by_channel[channel_number] = []
+
+        for entity in self.list_of_entities():
+            channel = entity.get_channel()
+
+            if channel not in self.entities_by_channel:
+                self.log.warning("Detected a PLMRS entity on an unsupported channel: %d" % channel)
+            else:
+                self.entities_by_channel[channel].append(entity)
+
+    def get_list_of_entities_on_channel(self, channel_number):
+        if channel_number not in self.region.get_channel_list():
+            raise ValueError("Unsupported channel number: %d" % channel_number)
+        return self.entities_by_channel[channel_number]

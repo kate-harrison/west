@@ -21,6 +21,8 @@ class ProtectedEntities(object):
         #except Exception as e:
         #    self.log.error("Unknown error loading one or more protected entities")
 
+        self._refresh_cached_data()
+
     @abstractmethod
     def _load_entities(self):
         """Load the protected entities."""
