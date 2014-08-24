@@ -1,4 +1,6 @@
 from protected_entity_tv_station import ProtectedEntityTVStation
+from protected_entity_radio_astronomy_site import ProtectedEntityRadioAstronomySite
+from protected_entity_plmrs import ProtectedEntityPLMRS
 from protected_entities_tv_stations import ProtectedEntitiesTVStations
 from protected_entities_plmrs import ProtectedEntitiesPLMRS
 from protected_entities_radio_astronomy_sites import ProtectedEntitiesRadioAstronomySites
@@ -450,6 +452,79 @@ class RulesetFcc2012(Ruleset):
         self.apply_tv_exclusions_to_map(region, is_whitespace_datamap2d, channel, device)
 
         return is_whitespace_datamap2d
+
+    def apply_entity_protections_to_map(self, region, is_whitespace_datamap2d, channel, device,
+                                        protected_entities_list, reset_datamap=False):
+        """
+        Turns the input :class:`data_map.DataMap2D` into a map of whitespace availability `based on only the provided
+        list of protected entities`. A value of `True` means that whitespace is available in that location, whereas a
+        value of `False` means that that location is not considered whitespace for the supplied device.
+
+        .. note:: Any entries which are already `False` will not be evaluated unless `reset_datamap=True`.
+
+        .. note:: Channel restrictions (see :meth:`apply_channel_restrictions_to_map`) are still applied.
+
+        .. note:: Logs an error but continues computation if an unrecognized protected entity is found.
+
+        Recommended usage is to initialize is_whitespace_datamap2d to an is_in_region DataMap2D to avoid computations on
+        locations which are outside of the region. No in-region testing is done otherwise.
+
+        :param region: region containing the protected entities
+        :type region: :class:`region.Region` object
+        :param is_whitespace_datamap2d: DataMap2D to be filled with the output
+        :type is_whitespace_datamap2d: :class:`data_map.DataMap2D` object
+        :param channel: channel to be tested for whitespace
+        :type channel: int
+        :param device: the device which desires whitespace access
+        :type device: :class:`device.Device` object
+        :param protected_entities_list: list of protected entities to be used when calculating the whitespace map
+        :type protected_entities_list: list of :class:`protected_entities.ProtectedEntities` objects
+        :param reset_datamap: if True, the DataMap2D is reset to `True` (i.e. "evaluate all") before computations begin
+        :type reset_datamap: bool
+        :return: None
+        """
+        if reset_datamap:
+            # Initialize to True so that all points will be evaluated
+            is_whitespace_datamap2d.reset_all_values(True)
+
+        self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device)
+
+        for (lat_idx, lat) in enumerate(is_whitespace_datamap2d.latitudes):
+            for (lon_idx, lon) in enumerate(is_whitespace_datamap2d.longitudes):
+                # Skip if not whitespace
+                if not is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx]:
+                    continue
+
+                location = (lat, lon)
+
+                # Check to see if any entity is protected
+                location_is_whitespace = True
+                for entity in protected_entities_list:
+                    if isinstance(entity, ProtectedEntityTVStation):
+                        if channel == entity.get_channel():
+                            location_is_whitespace &= \
+                                not self.cochannel_tv_station_is_protected(entity, location, device.get_haat())
+                        elif helpers.channels_are_adjacent_in_frequency(region, entity.get_channel(), channel):
+                            location_is_whitespace &= \
+                                not self.adjacent_channel_tv_station_is_protected(entity, location, device.get_haat())
+                        else:
+                            # Not protected if not cochannel or adjacent channel
+                            continue
+                    elif isinstance(entity, ProtectedEntityPLMRS):
+                        if channel == entity.get_channel():
+                            location_is_whitespace &= not self.plmrs_is_protected(entity, location, channel, region)
+                    elif isinstance(entity, ProtectedEntityRadioAstronomySite):
+                        location_is_whitespace &= not self.radioastronomy_site_is_protected(entity, location)
+                    else:
+                        self.log.error("Could not apply protections for the following entity: %s" % str(entity))
+                        continue
+
+                    # Don't need to check other entities if the location has already been ruled out as whitespace
+                    if not location_is_whitespace:
+                        break
+
+                # Update the map
+                is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx] = location_is_whitespace
 
     def apply_channel_restrictions_to_map(self, region, is_whitespace_datamap2d, channel, device):
         """
