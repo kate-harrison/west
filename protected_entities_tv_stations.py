@@ -102,16 +102,14 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
 class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
     """Defines some of the common properties of US TV stations."""
 
-    # FYI: cannot use doc_inherit in this class without running into a max recursion depth limit (TODO: look into this)
-
     def digital_tv_types(self):
         return ['DT', 'DC', 'LD', 'DS', 'DX']
 
     def analog_tv_types(self):
-        return ['CA', 'TX', 'TS']
+        return ['CA', 'TX', 'TS', 'TV']
 
     def ignored_tv_types(self):
-        return ['DD']
+        return ['DD', 'LM']     # distributed digital, land mobile
 
     def get_max_protected_radius_km(self):
         """
@@ -121,6 +119,152 @@ class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
         :rtype: float
         """
         return 200.0
+
+class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStationsUnitedStates):
+    """This class contains TV stations as read from the TV Query website. Subclasses will contain data from a particular
+    date.
+
+    TVQuery: http://www.fcc.gov/encyclopedia/tv-query-broadcast-station-search
+    Key: http://transition.fcc.gov/mb/audio/am_fm_tv_textlist_key.txt
+    """
+
+    def _load_entities(self):
+        """Example entry:
+
+        ['', 'K02JU       ', '-         ', 'TX ', '2   ', 'DA  ', '                    ', '-  ', '-  ', 'LIC    ',
+        'SELAWIK                  ', 'AK ', 'US ', 'BLTTV  -19800620IA  ', '0.018  kW ', '-         ', '0.0     ',
+        '-       ', '11543      ', 'N ', '66 ', '35 ', '57.00 ', 'W ', '160 ', '0  ', '0.00  ',
+        'CITY OF SELAWIK                                                             ', '   0.00 km ', '   0.00 mi ',
+        '  0.00 deg ', '72.    m', 'H       ', '20773     ', '210.    ', '-       ', '0.      ', '21309     ', '-  ',
+        '']
+
+        Key: http://transition.fcc.gov/mb/audio/am_fm_tv_textlist_key.txt
+        """
+        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
+
+        column_number = dict()
+        column_number['callsign'] = 1
+        column_number['tx_type'] = 3
+        column_number['channel'] = 4
+        column_number['country'] = 12
+        column_number['ERP_kW'] = 14
+        column_number['HAAT'] = 16
+        column_number['facility_id'] = 18
+        column_number['lat_dir'] = 19
+        column_number['lat_deg'] = 20
+        column_number['lat_min'] = 21
+        column_number['lat_sec'] = 22
+        column_number['lon_dir'] = 23
+        column_number['lon_deg'] = 24
+        column_number['lon_min'] = 25
+        column_number['lon_sec'] = 26
+        column_number['km_offset'] = 28
+
+        def convert_dms_to_decimal(degrees, minutes, seconds):
+            return degrees + minutes/60 + seconds/3600
+
+        with open(self.source_filename(), 'r') as f:
+            station_csv = csv.reader(f, delimiter='|')
+
+            for station_row in station_csv:
+                # Skip blank rows
+                if len(station_row) == 0:
+                    continue
+
+                try:
+                    # Skip "vacant" entries
+                    if str.strip(station_row[column_number['callsign']]) in ['VACANT']:
+                        continue
+
+                    # Skip stations which are not in the US
+                    if str.strip(station_row[column_number['country']]) in ["CA", "MX"]:
+                        continue
+
+                    tx_type = str.strip(station_row[column_number['tx_type']])
+
+                    # The second list holds types which designate petitions
+                    if tx_type in self.ignored_tv_types() or tx_type in ['DM', 'DR', 'DN']:
+                        continue
+
+                    channel = int(station_row[column_number['channel']])
+                    # Skip stations that are outside the channel bounds
+                    # See Q&A from 7/13/11 at
+                    # http://www.fcc.gov/encyclopedia/white-space-database-administration-q-page:
+                    #   "Database systems are not required to provide adjacent channel protection to legacy services
+                    #    from the TV bands that are continuing to operate on channel 52."
+                    if channel > 51:
+                        continue
+
+                    ERP_kW_string = station_row[column_number['ERP_kW']].split(" ")[0]
+                    ERP_Watts = float(ERP_kW_string) * 1e3
+                    # Skip stations with an ERP that is zero
+                    # The FCC whitespace database administrators FAQ page
+                    # (http://www.fcc.gov/encyclopedia/white-space-database-administration-q-page) mentions visual peak
+                    # power and visual average power; however, these values are not present in the TV Query data.
+                    if ERP_Watts < 0.001:
+                        self.log.warning("Skipping station with 0 kW ERP; callsign: %s" %
+                                         station_row[column_number['callsign']])
+                        continue
+
+                    # Convert latitude
+                    lat_dir = str.strip(station_row[column_number['lat_dir']])
+                    lat_deg = float(station_row[column_number['lat_deg']])
+                    lat_min = float(station_row[column_number['lat_min']])
+                    lat_sec = float(station_row[column_number['lat_sec']])
+                    if lat_dir in ['n', 'N']:
+                        lat_sign = 1
+                    elif lat_dir in ['s', 'S']:
+                        lat_sign = -1
+                    else:
+                        self.log.error("Could not determine station latitude (direction: %s); skipping station" %
+                                       lat_dir)
+                        print station_row
+                        continue
+                    latitude = lat_sign * convert_dms_to_decimal(lat_deg, lat_min, lat_sec)
+
+                    # Convert longitude
+                    lon_dir = str.strip(station_row[column_number['lon_dir']])
+                    lon_deg = float(station_row[column_number['lon_deg']])
+                    lon_min = float(station_row[column_number['lon_min']])
+                    lon_sec = float(station_row[column_number['lon_sec']])
+                    if lon_dir in ['e', 'E']:
+                        lon_sign = 1
+                    elif lon_dir in ['w', 'W']:
+                        lon_sign = -1
+                    else:
+                        self.log.error("Could not determine station longitude (direction: %s); skipping station" %
+                                       lon_dir)
+                        print station_row
+                        continue
+                    longitude = lon_sign * convert_dms_to_decimal(lon_deg, lon_min, lon_sec)
+
+                    HAAT_meters = float(station_row[column_number['HAAT']])
+                except Exception as e:
+                    self.log.error("Error loading station: ", str(e))
+                    continue
+
+                # Create the station
+                new_station = ProtectedEntityTVStation(self, self.get_mutable_region(), latitude=latitude,
+                                                       longitude=longitude, channel=channel, ERP_Watts=ERP_Watts,
+                                                       HAAT_meters=HAAT_meters, tx_type=tx_type)
+
+                # Add optional information
+                new_station.add_facility_id(station_row[column_number['facility_id']])
+                new_station.add_callsign(station_row[column_number['callsign']])
+
+                # Add it to the internal list
+                self._add_entity(new_station)
+
+
+class ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(ProtectedEntitiesTVStationsUnitedStatesTVQuery):
+    """TV Query data from June 17, 2014."""
+
+    def source_filename(self):
+        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        return os.path.join(base_directory, '2014-06-17 tvq.txt')
+
+    def source_name(self):
+        return "TVQuery download on June 17, 2014 [http://www.fcc.gov/encyclopedia/tv-query-broadcast-station-search]"
 
 
 class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStationsUnitedStates):
@@ -157,7 +301,6 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
 
                 tx_type = station['tx_type']
 
-                # Skip distributed digital stations
                 if tx_type in self.ignored_tv_types():
                     continue
 

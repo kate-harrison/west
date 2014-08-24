@@ -27,7 +27,7 @@ class RegionUnitedStates(Region):
     # @doc_inherit
     def _load_protected_entities(self):
         self.protected_entities[protected_entities_tv_stations.ProtectedEntitiesTVStations] = \
-            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesFromGoogle(self.simulation, self)
+            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(self.simulation, self)
 
         self.protected_entities[protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
             protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self.simulation, self)
