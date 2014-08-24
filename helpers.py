@@ -102,3 +102,11 @@ def find_first_value_approximately_equal(list_to_search, value_to_find, toleranc
     such index exists.
     """
     return find_first_index_where(list_to_search, lambda v: abs(value_to_find - v) < tolerance)
+
+def generate_submap_for_protected_entity(base_datamap2d, protected_entity):
+    bb = protected_entity.get_bounding_box()
+    latitude_bounds = (bb['min_lat'], bb['max_lat'])
+    longitude_bounds = (bb['min_lon'], bb['max_lon'])
+
+    return base_datamap2d.generate_submap(latitude_bounds, longitude_bounds,
+                                          generate_even_if_submap_partially_outside_datamap=True)

@@ -424,7 +424,8 @@ class DataMap2D(object):
 #####
 #   SUBMAPS
 #####
-    def generate_submap(self, latitude_bounds, longitude_bounds):
+    def generate_submap(self, latitude_bounds, longitude_bounds,
+                        generate_even_if_submap_partially_outside_datamap=False):
         """
         Generates a :class:`DataMap2D` which contains a subset of this DataMap2D's coordinates and data. The bounds of
         the resulting submap will be greater than or equal to the bounds given as arguments (i.e. the submap will
@@ -437,6 +438,10 @@ class DataMap2D(object):
 
         :param latitude_bounds: (min_latitude, max_latitude)
         :param longitude_bounds: (min_longitude, max_longitude)
+        :param generate_even_if_submap_partially_outside_datamap: if True, generates the submap closest to the given \
+                bounds even if the requested submap is not fully contained in the DataMap2D; if False, a ValueError \
+                will be raised if such a request is made. May still generate a ValueError if there is no overlap \
+                between the requested submap and the DataMap2D.
         :return: data map which contains a subset of the data in this map
         :rtype: :class:`DataMap2D`
         """
@@ -455,7 +460,19 @@ class DataMap2D(object):
 
         if any([index is None for index in
                 [lower_latitude_index, lower_longitude_index, upper_latitude_index, upper_longitude_index]]):
-            raise ValueError("Given latitude/longitude bounds are out of bounds for this DataMap2D.")
+            if not generate_even_if_submap_partially_outside_datamap:
+                raise ValueError("Given latitude/longitude bounds are out of the strict bounds for this DataMap2D."
+                                 " Consider using the 'generate_even_if_submap_partially_outside_datamap' option.")
+            elif min_lat > self._latitude_bounds[1] or max_lat < self._latitude_bounds[0] \
+                    or min_lon > self._longitude_bounds[1] or max_lon < self._longitude_bounds[0]:
+                raise ValueError("There is no overlap between the given latitude/longitude bounds and this DataMap2D.")
+            else:   # can assume at most one of the indices in each pair is None
+                self.log.debug("Generating a submap which is smaller than the requested latitude/longitude bounds")
+                lower_latitude_index = lower_latitude_index or 0
+                upper_latitude_index = upper_latitude_index or len(self.latitudes)-1
+                lower_longitude_index = lower_longitude_index or 0
+                upper_longitude_index = upper_longitude_index or len(self.longitudes)-1
+
 
         num_latitude_divisions = upper_latitude_index - lower_latitude_index + 1
         num_longitude_divisions = upper_longitude_index - lower_longitude_index + 1
