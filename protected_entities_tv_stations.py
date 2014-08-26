@@ -172,8 +172,10 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     continue
 
                 try:
+                    callsign = station_row[column_number['callsign']].strip()
+
                     # Skip "vacant" entries
-                    if str.strip(station_row[column_number['callsign']]) in ['VACANT']:
+                    if callsign in ['VACANT']:
                         continue
 
                     # Skip stations which are not in the US
@@ -202,8 +204,7 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     # (http://www.fcc.gov/encyclopedia/white-space-database-administration-q-page) mentions visual peak
                     # power and visual average power; however, these values are not present in the TV Query data.
                     if ERP_Watts < 0.001:
-                        self.log.warning("Skipping station with 0 kW ERP; callsign: %s" %
-                                         station_row[column_number['callsign']])
+                        self.log.warning("Skipping station with 0 kW ERP; callsign: '%s'" % callsign)
                         continue
 
                     # Convert latitude
@@ -216,8 +217,8 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     elif lat_dir in ['s', 'S']:
                         lat_sign = -1
                     else:
-                        self.log.error("Could not determine station latitude (direction: %s); skipping station" %
-                                       lat_dir)
+                        self.log.error("Could not determine station latitude (direction: %s); skipping station with callsign %s" %
+                                       (lat_dir, callsign))
                         print station_row
                         continue
                     latitude = lat_sign * convert_dms_to_decimal(lat_deg, lat_min, lat_sec)
@@ -232,8 +233,8 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     elif lon_dir in ['w', 'W']:
                         lon_sign = -1
                     else:
-                        self.log.error("Could not determine station longitude (direction: %s); skipping station" %
-                                       lon_dir)
+                        self.log.error("Could not determine station longitude (direction: %s); skipping station with callsign %s" %
+                                       (lon_dir, callsign))
                         print station_row
                         continue
                     longitude = lon_sign * convert_dms_to_decimal(lon_deg, lon_min, lon_sec)
@@ -249,8 +250,8 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                                                        HAAT_meters=HAAT_meters, tx_type=tx_type)
 
                 # Add optional information
-                new_station.add_facility_id(station_row[column_number['facility_id']])
-                new_station.add_callsign(station_row[column_number['callsign']])
+                new_station.add_facility_id(station_row[column_number['facility_id']].strip())
+                new_station.add_callsign(callsign)
 
                 # Add it to the internal list
                 self._add_entity(new_station)
