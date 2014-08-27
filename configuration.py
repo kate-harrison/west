@@ -2,7 +2,8 @@ import os
 
 # TODO: find a better way of organizing configuration parameters
 
-base_data_directory = os.path.join("data")
+package_directory, _ = os.path.split(__file__)
+base_data_directory = os.path.join(package_directory, "data")
 region_directory_name = "Region"
 boundaries_directory_name = "Boundaries"
 protected_entities_directory_name = "ProtectedEntities"
