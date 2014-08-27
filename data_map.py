@@ -233,6 +233,33 @@ class DataMap2D(object):
         self.set_value_by_index(latitude_index, longitude_index, new_value)
         return True
 
+    def update_all_values_via_function(self, update_function, verbose=False):
+        """
+        Updates each pixel in the :class:`DataMap2D` according to ``update_function``. The return value from the
+        update function is used as the new value for that pixel, except if the value is None; in that case, no update
+        is performed.
+
+        ``update_function`` should have the following signature::
+
+            def update_function(latitude, longitude, latitude_index, longitude_index, current_value):
+                ...
+                return new_value_for_pixel      # may also return None if no update is desired
+
+        :param update_function: function used to update the values
+        :type update_function: function object
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
+        :return: None
+        """
+        for (lat_idx, lat) in enumerate(self.latitudes):
+            if verbose and lat_idx % 10 == 0:
+                self.log.info("Latitude number: %d" % lat_idx)
+            for (lon_idx, lon) in enumerate(self.longitudes):
+                current_value = self.get_value_by_index(lat_idx, lon_idx)
+                new_value = update_function(lat, lon, lat_idx, lon_idx, current_value)
+                if new_value is not None:
+                    self.set_value_by_index(lat_idx, lon_idx, new_value)
+
     def datamap_is_comparable(self, other_datamap2d):
         """Tests two :class:`DataMap2D` objects for comparability (i.e. are they describing the same points?).
 
@@ -278,15 +305,22 @@ class DataMap2D(object):
         else:
             raise TypeError(error_msg)
 
-    def combine_datamaps_with_function(self, other_datamap2d, function):
+    def combine_datamaps_with_function(self, other_datamap2d, combination_function):
         """Returns a new :class:`DataMap2D` where each point is the output
-        of calling function(this_point, other_point). Returns None upon error.
+        of calling ``combination_function(this_point, other_point)``.
+
+        The function signature of ``combination_function`` should be as follows::
+
+            def combination_function(this_value, other_value):
+                ...
+                return combined_value
 
         Does not modify the data in either :class:`DataMap2D`.
 
         :param other_datamap2d:
         :type other_datamap2d: :class:`DataMap2D`
-        :param function: handle to a function taking exactly two arguments of type :class:`DataPoint`
+        :param combination_function: handle to a function taking exactly two arguments of type :class:`DataPoint`
+        :type combination_function: function object
         :rtype: :class:`DataPointCollection` matching this one or None
         :return:
         """
@@ -299,7 +333,7 @@ class DataMap2D(object):
 
         for latitude_index in range(0, dimensions[0]):
             for longitude_index in range(0, dimensions[1]):
-                new_value = function( self.get_value_by_index(latitude_index, longitude_index),
+                new_value = combination_function( self.get_value_by_index(latitude_index, longitude_index),
                                       other_datamap2d.get_value_by_index(latitude_index, longitude_index))
                 new_datamap2d.set_value_by_index(latitude_index, longitude_index, new_value)
 

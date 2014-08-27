@@ -418,7 +418,8 @@ class RulesetFcc2012(Ruleset):
 
         return True
 
-    def turn_datamap_into_whitespace_map(self, region, is_whitespace_datamap2d, channel, device, reset_datamap=False):
+    def turn_datamap_into_whitespace_map(self, region, is_whitespace_datamap2d, channel, device, reset_datamap=False,
+                                         verbose=False):
         """
         Turns the input :class:`data_map.DataMap2D` into a map of whitespace availability. A value of `True` means that
         whitespace is available in that location, whereas a value of `False` means that that location is not considered
@@ -439,22 +440,21 @@ class RulesetFcc2012(Ruleset):
         :type device: :class:`device.Device` object
         :param reset_datamap: if True, the DataMap2D is reset to `True` (i.e. "evaluate all") before computations begin
         :type reset_datamap: bool
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
         :return: None
         """
-
         if reset_datamap:
             # Initialize to True so that all points will be evaluated
             is_whitespace_datamap2d.reset_all_values(True)
 
-        self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device)
-        self.apply_radioastronomy_exclusions_to_map(region, is_whitespace_datamap2d)
-        self.apply_plmrs_exclusions_to_map(region, is_whitespace_datamap2d, channel)
-        self.apply_tv_exclusions_to_map(region, is_whitespace_datamap2d, channel, device)
-
-        return is_whitespace_datamap2d
+        self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device, verbose=verbose)
+        self.apply_radioastronomy_exclusions_to_map(region, is_whitespace_datamap2d, verbose=verbose)
+        self.apply_plmrs_exclusions_to_map(region, is_whitespace_datamap2d, channel, verbose=verbose)
+        self.apply_tv_exclusions_to_map(region, is_whitespace_datamap2d, channel, device, verbose=verbose)
 
     def apply_entity_protections_to_map(self, region, is_whitespace_datamap2d, channel, device,
-                                        protected_entities_list, reset_datamap=False):
+                                        protected_entities_list, reset_datamap=False, verbose=False):
         """
         Turns the input :class:`data_map.DataMap2D` into a map of whitespace availability `based on only the provided
         list of protected entities`. A value of `True` means that whitespace is available in that location, whereas a
@@ -481,6 +481,8 @@ class RulesetFcc2012(Ruleset):
         :type protected_entities_list: list of :class:`protected_entities.ProtectedEntities` objects
         :param reset_datamap: if True, the DataMap2D is reset to `True` (i.e. "evaluate all") before computations begin
         :type reset_datamap: bool
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
         :return: None
         """
         if reset_datamap:
@@ -489,42 +491,41 @@ class RulesetFcc2012(Ruleset):
 
         self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device)
 
-        for (lat_idx, lat) in enumerate(is_whitespace_datamap2d.latitudes):
-            for (lon_idx, lon) in enumerate(is_whitespace_datamap2d.longitudes):
-                # Skip if not whitespace
-                if not is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx]:
+        def update_function(latitude, longitude, latitude_index, longitude_index, currently_whitespace):
+            if not currently_whitespace:       # already known to not be whitespace
+                return None
+
+            location = (latitude, longitude)
+
+            # Check to see if any entity is protected
+            location_is_whitespace = True
+            for entity in protected_entities_list:
+                if isinstance(entity, ProtectedEntityTVStation):
+                    if channel == entity.get_channel():
+                        location_is_whitespace &= \
+                            not self.cochannel_tv_station_is_protected(entity, location, device.get_haat())
+                    elif helpers.channels_are_adjacent_in_frequency(region, entity.get_channel(), channel):
+                        location_is_whitespace &= \
+                            not self.adjacent_channel_tv_station_is_protected(entity, location, device.get_haat())
+                    else:
+                        # Not protected if not cochannel or adjacent channel
+                        continue
+                elif isinstance(entity, ProtectedEntityPLMRS):
+                    if channel == entity.get_channel():
+                        location_is_whitespace &= not self.plmrs_is_protected(entity, location, channel, region)
+                elif isinstance(entity, ProtectedEntityRadioAstronomySite):
+                    location_is_whitespace &= not self.radioastronomy_site_is_protected(entity, location)
+                else:
+                    self.log.error("Could not apply protections for the following entity: %s" % str(entity))
                     continue
 
-                location = (lat, lon)
+                # Don't need to check other entities if the location has already been ruled out as whitespace
+                if not location_is_whitespace:
+                    break
 
-                # Check to see if any entity is protected
-                location_is_whitespace = True
-                for entity in protected_entities_list:
-                    if isinstance(entity, ProtectedEntityTVStation):
-                        if channel == entity.get_channel():
-                            location_is_whitespace &= \
-                                not self.cochannel_tv_station_is_protected(entity, location, device.get_haat())
-                        elif helpers.channels_are_adjacent_in_frequency(region, entity.get_channel(), channel):
-                            location_is_whitespace &= \
-                                not self.adjacent_channel_tv_station_is_protected(entity, location, device.get_haat())
-                        else:
-                            # Not protected if not cochannel or adjacent channel
-                            continue
-                    elif isinstance(entity, ProtectedEntityPLMRS):
-                        if channel == entity.get_channel():
-                            location_is_whitespace &= not self.plmrs_is_protected(entity, location, channel, region)
-                    elif isinstance(entity, ProtectedEntityRadioAstronomySite):
-                        location_is_whitespace &= not self.radioastronomy_site_is_protected(entity, location)
-                    else:
-                        self.log.error("Could not apply protections for the following entity: %s" % str(entity))
-                        continue
+            return location_is_whitespace
 
-                    # Don't need to check other entities if the location has already been ruled out as whitespace
-                    if not location_is_whitespace:
-                        break
-
-                # Update the map
-                is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx] = location_is_whitespace
+        is_whitespace_datamap2d.update_all_values_via_function(update_function, verbose=verbose)
 
     def apply_channel_restrictions_to_map(self, region, is_whitespace_datamap2d, channel, device):
         """
@@ -547,7 +548,7 @@ class RulesetFcc2012(Ruleset):
         if not self._is_permissible_channel(region, channel, device):
             is_whitespace_datamap2d.reset_all_values(False)
 
-    def apply_tv_exclusions_to_map(self, region, is_whitespace_datamap2d, channel, device):
+    def apply_tv_exclusions_to_map(self, region, is_whitespace_datamap2d, channel, device, verbose=False):
         """
         Applies TV exclusions to the given :class:`data_map.DataMap2D`. Entries will be marked `True` if they are
         whitespace and `False` otherwise.
@@ -562,21 +563,20 @@ class RulesetFcc2012(Ruleset):
         :type channel: int
         :param device: the device which desires whitespace access
         :type device: :class:`device.Device` object
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
         :return: None
         """
-        self.log.info("Applying TV exclusions")
-        for (lat_idx, lat) in enumerate(is_whitespace_datamap2d.latitudes):
-            if lat_idx % 10 == 0:
-                print "Latitude number: %d" % lat_idx
-            for (lon_idx, lon) in enumerate(is_whitespace_datamap2d.longitudes):
-                # Skip if not whitespace
-                if not is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx]:
-                    continue
+        def tv_station_update_function(latitude, longitude, latitude_index, longitude_index, currently_whitespace):
+            if not currently_whitespace:       # already known to not be whitespace
+                return None
+            return self.location_is_whitespace_tv_stations_only(region, (latitude, longitude), channel, device)
 
-                is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx] = \
-                    self.location_is_whitespace_tv_stations_only(region, (lat, lon), channel, device)
+        if verbose:
+            self.log.info("Applying TV exclusions")
+        is_whitespace_datamap2d.update_all_values_via_function(tv_station_update_function, verbose=verbose)
 
-    def apply_plmrs_exclusions_to_map(self, region, is_whitespace_datamap2d, channel):
+    def apply_plmrs_exclusions_to_map(self, region, is_whitespace_datamap2d, channel, verbose=False):
         """
         Applies PLMRS exclusions to the given :class:`data_map.DataMap2D`. Entries will be marked `True` if they are
         whitespace and `False` otherwise.
@@ -589,21 +589,20 @@ class RulesetFcc2012(Ruleset):
         :type is_whitespace_datamap2d: :class:`data_map.DataMap2D` object
         :param channel: channel to be tested for whitespace
         :type channel: int
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
         :return: None
         """
-        self.log.info("Applying PLMRS exclusions")
-        for (lat_idx, lat) in enumerate(is_whitespace_datamap2d.latitudes):
-            if lat_idx % 10 == 0:
-                print "Latitude number: %d" % lat_idx
-            for (lon_idx, lon) in enumerate(is_whitespace_datamap2d.longitudes):
-                # Skip if not whitespace
-                if not is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx]:
-                    continue
+        def plmrs_update_function(latitude, longitude, latitude_index, longitude_index, currently_whitespace):
+            if not currently_whitespace:       # already known to not be whitespace
+                return None
+            return self.location_is_whitespace_plmrs_only(region, (latitude, longitude), channel)
 
-                is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx] = \
-                    self.location_is_whitespace_plmrs_only(region, (lat, lon), channel)
+        if verbose:
+            self.log.info("Applying PLMRS exclusions")
+        is_whitespace_datamap2d.update_all_values_via_function(plmrs_update_function, verbose=verbose)
 
-    def apply_radioastronomy_exclusions_to_map(self, region, is_whitespace_datamap2d):
+    def apply_radioastronomy_exclusions_to_map(self, region, is_whitespace_datamap2d, verbose=False):
         """
         Applies radioastronomy exclusions to the given :class:`data_map.DataMap2D`. Entries will be marked `True` if
         they are whitespace and `False` otherwise.
@@ -614,17 +613,19 @@ class RulesetFcc2012(Ruleset):
         :type region: :class:`region.Region` object
         :param is_whitespace_datamap2d: DataMap2D to be filled with the output
         :type is_whitespace_datamap2d: :class:`data_map.DataMap2D` object
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
         :return: None
         """
-        self.log.info("Applying radioastronomy exclusions")
-        for (lat_idx, lat) in enumerate(is_whitespace_datamap2d.latitudes):
-            for (lon_idx, lon) in enumerate(is_whitespace_datamap2d.longitudes):
-                # Skip if not whitespace
-                if not is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx]:
-                    continue
+        def radioastronomy_update_function(latitude, longitude, latitude_index, longitude_index, currently_whitespace):
+            if not currently_whitespace:       # already known to not be whitespace
+                return None
+            return self.location_is_whitespace_radioastronomy_only(region, (latitude, longitude))
 
-                is_whitespace_datamap2d.mutable_matrix[lat_idx, lon_idx] = \
-                    self.location_is_whitespace_radioastronomy_only(region, (lat, lon))
+        if verbose:
+            self.log.info("Applying radioastronomy exclusions")
+        is_whitespace_datamap2d.update_all_values_via_function(radioastronomy_update_function, verbose=verbose)
+
 ####
 #   END GENERAL WHITESPACE CALCULATIONS
 ####
