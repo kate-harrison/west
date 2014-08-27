@@ -4,38 +4,39 @@ import helpers
 class ProtectedEntityTVStation(ProtectedEntity):
     """TV station"""
 
-    required_properties = ["latitude", "longitude", "channel", "ERP_Watts", "HAAT_meters", "tx_type"]
+    required_properties = ["_latitude", "_longitude", "_channel", "_ERP_Watts", "_HAAT_meters", "_tx_type"]
 
     def __init__(self, container, region, latitude, longitude, channel, ERP_Watts, HAAT_meters, tx_type):
         super(ProtectedEntityTVStation, self).__init__(region, container, latitude, longitude)
 
-        self.channel = channel
-        self.ERP_Watts = ERP_Watts
-        self.HAAT_meters = HAAT_meters
-        self.tx_type = tx_type
+        self._channel = channel
+        self._ERP_Watts = ERP_Watts
+        self._HAAT_meters = HAAT_meters
+        self._tx_type = tx_type
 
         # TODO: bring this back
         if not (self.is_digital() ^ self.is_analog()):
            self.log.error("Transmitter type not recognized as analog or "
                           "digital: '%s'. Please edit the configuration to "
-                          "add this type.", self.tx_type)
+                          "add this type.", self.get_tx_type())
 
         # Optional information that can be added later
-        self.facility_id = None
-        self.callsign = None
+        self._facility_id = None
+        self._callsign = None
 
-        self.log_error_if_necessary_data_missing()
+        self._log_error_if_necessary_data_missing()
 
     def to_string(self):
         """
         Returns some of the TV station's information as a formatted string.
         """
         output = ""
-        output += "Location: (%f,%f)" % (self.latitude, self.longitude) + "\n"
-        output += "Type: %s" % self.tx_type + "\t"
-        output += "Channel: %d" % self.channel + "\t"
-        output += "ERP (kW): %.2f" % (self.ERP_Watts/1000) + "\t"
-        output += "HAAT (m): %f" % self.HAAT_meters + "\n"
+        output += "Location: (%f,%f)" % (self._latitude, self._longitude) + "\n"
+        output += "Type: %s" % self._tx_type + "\t"
+        output += "Channel: %d" % self._channel + "\t"
+        output += "ERP (kW): %.2f" % (self._ERP_Watts/1000) + "\t"
+        output += "HAAT (m): %f" % self._HAAT_meters + "\n"
+        output += "Callsign: %s" % str(self._callsign) + "\n"
 
         return output
 
@@ -43,73 +44,84 @@ class ProtectedEntityTVStation(ProtectedEntity):
         """
         Add the facility ID associated with the TV station.
         """
-        self.facility_id = facility_id
+        self._facility_id = facility_id
+
+    def get_facility_id(self):
+        """
+        Returns a string containing the facility ID associated with the TV station (if any) or None.
+        """
+        return self._facility_id
 
     def add_callsign(self, callsign):
         """
         Add the callsign associated with the TV station.
         """
-        self.callsign = callsign
+        self._callsign = callsign
+
+    def get_callsign(self):
+        """
+        Returns a string containing the callsign associated with the TV station (if any) or None.
+        """
 
     def get_location(self):
-        return (self.latitude, self.longitude)
+        return (self._latitude, self._longitude)
 
     def get_channel(self):
-        return self.channel
+        return self._channel
 
     def get_erp_watts(self):
         """
         Returns the ERP (effective radiated power) of the TV station in Watts.
         """
-        return self.ERP_Watts
+        return self._ERP_Watts
 
     def get_erp_kilowatts(self):
         """
         Returns the ERP (effective radiated power) of the TV station in kilowatts.
         """
-        return self.ERP_Watts / 1000.0
+        return self._ERP_Watts / 1000.0
 
     def get_haat_meters(self):
         """
         Returns the HAAT (height above average terrain) of the TV station in meters.
         """
-        return self.HAAT_meters
+        return self._HAAT_meters
 
     def get_tx_type(self):
         """
         Returns the transmitter type of the TV station (depends on source data). If possible, use :meth:`is_digital`
         and :meth:`is_analog` to avoid dependence on source data.
         """
-        return self.tx_type
+        return self._tx_type
 
     def is_digital(self):
         """
         Returns True if the TV station is digital and False otherwise. See also :meth:`is_analog`.
         """
-        return self.tx_type in self.container.digital_tv_types()
+        return self._tx_type in self.container.digital_tv_types()
 
     def is_analog(self):
         """
         Returns True if the TV station is analog and False otherwise. See also :meth:`is_digital`.
         """
-        return self.tx_type in self.container.analog_tv_types()
+        return self._tx_type in self.container.analog_tv_types()
 
     def is_cochannel(self, channel):
         """
         Returns True if `channel` is the same as this station's channel and False otherwise.
         """
-        return self.channel == channel
+        return self._channel == channel
 
     def is_adjacent_channel(self, channel):
         """
         Returns True if `channel` is adjacent to this station's channel and False otherwise. See also
         :meth:`helpers.channels_are_adjacent_in_frequency`.
         """
-        return helpers.channels_are_adjacent_in_frequency(self.container.simulation.get_mutable_region(), self.channel, channel)
+        return helpers.channels_are_adjacent_in_frequency(self.container.simulation.get_mutable_region(), self._channel, channel)
 
     def add_to_kml(self, kml):
         point = kml.newpoint()
-        point.name = str(self.callsign)
+        point.name = str(self._callsign)
         point.description = """
         Channel: %d
         Transmitter type: %s

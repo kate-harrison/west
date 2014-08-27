@@ -9,34 +9,33 @@ class ProtectedEntity(object):
     """Generic protected entity."""
     __metaclass__ = ABCMeta
 
-    required_properties = ["latitude", "longitude"]
+    _required_properties = ["_latitude", "_longitude"]
 
     def __init__(self, region, container, latitude, longitude):
         self.log = getModuleLogger(self)
-        self.region = region
+        self._region = region
 
         self.container = container
         if not isinstance(container, ProtectedEntities):
             # TODO: raise an exception?
             self.log.error("Container is not a ProtectedEntities instance: got %s instead." % container.__class__.__name__)
 
-        self.latitude = latitude
-        self.longitude = longitude
+        self._latitude = latitude
+        self._longitude = longitude
 
         self._create_bounding_box()
 
-    def log_error_if_necessary_data_missing(self):
+    def _log_error_if_necessary_data_missing(self):
         """Checks for the existence and initialization of all required
         properties. Logs errors for all that are missing.
 
         Note: this only checks for the most essential data."""
-        for property in self.required_properties:
+        for property in self._required_properties:
             if not hasattr(self, property):
                 self.log.error("Missing required property: ", property)
 
             if getattr(self, property) is None:
                 self.log.error("Required property %s has value None" % property)
-
 
     def get_location(self):
         """
@@ -44,7 +43,7 @@ class ProtectedEntity(object):
         :rtype: tuple of floats
         """
         try:
-            return (self.latitude, self.longitude)
+            return (self._latitude, self._longitude)
         except Exception as e:
             self.log.error("Missing either latitude or longitude for this "
                            "protected entity")
@@ -55,14 +54,14 @@ class ProtectedEntity(object):
         :return: the latitude of the protected entity in decimal degrees
         :rtype: float
         """
-        return self.latitude
+        return self._latitude
 
     def get_longitude(self):
         """
         :return: the longitude of the protected entity in decimal degrees
         :rtype: float
         """
-        return self.longitude
+        return self._longitude
 
     def get_channel(self):
         """
@@ -86,7 +85,7 @@ class ProtectedEntity(object):
         if channel is None:
             return None
         else:
-            return self.region.get_center_frequency(channel)
+            return self._region.get_center_frequency(channel)
 
     @abstractmethod
     def add_to_kml(self, kml):
@@ -109,9 +108,9 @@ class ProtectedEntity(object):
               'max_lat': -float('inf'),
               'min_lon': float('inf'),
               'max_lon': -float('inf')
-        }
+             }
 
-        location = Point(self.latitude, self.longitude)
+        location = Point(self._latitude, self._longitude)
         for bearing in [0, 90, 180, 270, 360]:
             destination = VincentyDistance(kilometers=self.container.get_max_protected_radius_km()).destination(location, bearing)
             lat, lon = destination.latitude, destination.longitude
@@ -124,7 +123,7 @@ class ProtectedEntity(object):
             if lon > bb['max_lon']:
                 bb['max_lon'] = lon
 
-        self.protected_bounding_box = bb
+        self._protected_bounding_box = bb
 
     def get_bounding_box(self):
         """
@@ -133,7 +132,7 @@ class ProtectedEntity(object):
         A bounding box is a dictionary with four keys: min_lat, max_lat, min_lon, max_lon. Each will give a coordinate
         in decimal degrees.
         """
-        return self.protected_bounding_box
+        return self._protected_bounding_box
 
     def location_in_bounding_box(self, location):
         """

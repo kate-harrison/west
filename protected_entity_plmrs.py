@@ -3,28 +3,28 @@ from protected_entities import ProtectedEntities
 
 class ProtectedEntityPLMRS(ProtectedEntity):
 
-    required_properties = ["latitude", "longitude", "channel", "is_metro"]
+    _required_properties = ["_latitude", "_longitude", "_channel", "_is_metro"]
 
     def __init__(self, container, region, latitude, longitude, channel, is_metro, description=None):
         super(ProtectedEntityPLMRS, self).__init__(region, container, latitude, longitude)
 
-        self.channel = channel
+        self._channel = channel
         self._is_metro = is_metro
         self._description = description
 
-        self.log_error_if_necessary_data_missing()
+        self._log_error_if_necessary_data_missing()
 
     def get_location(self):
-        return (self.latitude, self.longitude)
+        return self._latitude, self._longitude
 
     def get_channel(self):
-        return self.channel
+        return self._channel
 
     def is_metro(self):
         return self._is_metro
 
     def to_string(self):
-        output = "PLMRS protection at (%.2f, %.2f) on channel %d" % (self.latitude, self.longitude, self.channel)
+        output = "PLMRS protection at (%.2f, %.2f) on channel %d" % (self._latitude, self._longitude, self._channel)
         if self.is_metro():
             output += " (metro)"
         else:
