@@ -129,7 +129,9 @@ class ProtectedEntityTVStation(ProtectedEntity):
         HAAT: %.2f meters
         Latitude: %.2f
         Longitude: %.2f
+        Callsign: %s
+        Facility ID: %s
         """ % (self.get_channel(), self.get_tx_type(), self.get_erp_kilowatts(), self.get_haat_meters(),
-               self.get_latitude(), self.get_longitude())
+               self.get_latitude(), self.get_longitude(), self.get_callsign(), self.get_facility_id())
         point.coords = [(self.get_longitude(), self.get_latitude())]
         return point
