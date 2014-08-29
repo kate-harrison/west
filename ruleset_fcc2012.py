@@ -418,8 +418,8 @@ class RulesetFcc2012(Ruleset):
 
         return True
 
-    def turn_datamap_into_whitespace_map(self, region, is_whitespace_datamap2d, channel, device, reset_datamap=False,
-                                         verbose=False):
+    def turn_datamap_into_whitespace_map(self, region, is_whitespace_datamap2d, channel, device,
+                                         ignore_channel_restrictions=False, reset_datamap=False, verbose=False):
         """
         Turns the input :class:`data_map.DataMap2D` into a map of whitespace availability. A value of `True` means that
         whitespace is available in that location, whereas a value of `False` means that that location is not considered
@@ -438,6 +438,9 @@ class RulesetFcc2012(Ruleset):
         :type channel: int
         :param device: the device which desires whitespace access
         :type device: :class:`device.Device` object
+        :param ignore_channel_restrictions: if True, skips checks relating to permissible channels of operation for \
+                the specified device
+        :type ignore_channel_restrictions: bool
         :param reset_datamap: if True, the DataMap2D is reset to `True` (i.e. "evaluate all") before computations begin
         :type reset_datamap: bool
         :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
@@ -448,13 +451,16 @@ class RulesetFcc2012(Ruleset):
             # Initialize to True so that all points will be evaluated
             is_whitespace_datamap2d.reset_all_values(True)
 
-        self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device, verbose=verbose)
+        if not ignore_channel_restrictions:
+            self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device, verbose=verbose)
+
         self.apply_radioastronomy_exclusions_to_map(region, is_whitespace_datamap2d, verbose=verbose)
         self.apply_plmrs_exclusions_to_map(region, is_whitespace_datamap2d, channel, verbose=verbose)
         self.apply_tv_exclusions_to_map(region, is_whitespace_datamap2d, channel, device, verbose=verbose)
 
     def apply_entity_protections_to_map(self, region, is_whitespace_datamap2d, channel, device,
-                                        protected_entities_list, reset_datamap=False, verbose=False):
+                                        protected_entities_list, ignore_channel_restrictions=False, reset_datamap=False,
+                                        verbose=False):
         """
         Turns the input :class:`data_map.DataMap2D` into a map of whitespace availability `based on only the provided
         list of protected entities`. A value of `True` means that whitespace is available in that location, whereas a
@@ -479,6 +485,9 @@ class RulesetFcc2012(Ruleset):
         :type device: :class:`device.Device` object
         :param protected_entities_list: list of protected entities to be used when calculating the whitespace map
         :type protected_entities_list: list of :class:`protected_entities.ProtectedEntities` objects
+        :param ignore_channel_restrictions: if True, skips checks relating to permissible channels of operation for \
+                the specified device
+        :type ignore_channel_restrictions: bool
         :param reset_datamap: if True, the DataMap2D is reset to `True` (i.e. "evaluate all") before computations begin
         :type reset_datamap: bool
         :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
@@ -489,7 +498,8 @@ class RulesetFcc2012(Ruleset):
             # Initialize to True so that all points will be evaluated
             is_whitespace_datamap2d.reset_all_values(True)
 
-        self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device)
+        if not ignore_channel_restrictions:
+            self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device)
 
         def update_function(latitude, longitude, latitude_index, longitude_index, currently_whitespace):
             if not currently_whitespace:       # already known to not be whitespace
