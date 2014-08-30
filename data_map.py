@@ -689,6 +689,18 @@ class DataMap3D(object):
             self.log.error("Could not retrieve layer: " + str(e))
             return
 
+    def set_layer(self, layer_descr, new_layer):
+        """
+        Replace a layer (:class:`DataMap2D`) with a new :class:`DataMap2D` object. The old and new objects must be
+        comparable and the layer must already exist.
+        """
+        self._raise_error_if_any_layer_does_not_exist([layer_descr])
+
+        old_layer = self.get_layer(layer_descr)
+        old_layer.raise_error_if_datamaps_are_incomparable(new_layer)
+
+        self._layers[layer_descr] = new_layer
+
     def get_some_layers_at_index_as_list(self, layer_descr_list, latitude_index, longitude_index):
         """
         Returns a list containing the value of each layer at the specified location. The list is ordered according to
