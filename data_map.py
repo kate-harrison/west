@@ -619,7 +619,7 @@ class DataMap2DWisconsin(DataMap2D):
     @classmethod
     def create(cls, num_latitude_divisions=50, num_longitude_divisions=50):
         """
-        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to the continental United States.
+        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to Wisconsin.
 
         :param num_latitude_divisions: number of latitude points per longitude
         :type num_latitude_divisions: int
@@ -672,49 +672,77 @@ class DataMap3D(object):
         if len(self._layers.keys()) is not len(layer_descr_list):
             self.log.warning("Incorrect number of layers created; duplicate keys?")
 
+    def _raise_error_if_any_layer_does_not_exist(self, layer_descr_list):
+        # TODO: add this to more functions, as needed
+        for layer_descr in layer_descr_list:
+            if layer_descr not in self._layer_descr_list:
+                raise AttributeError("Layer does not exist: %s" % str(layer_descr))
+
     def get_layer(self, layer_descr):
         """
         Retrieve a layer based on its description (key).
         """
+        self._raise_error_if_any_layer_does_not_exist([layer_descr])
         try:
             return self._layers[layer_descr]
         except Exception as e:
             self.log.error("Could not retrieve layer: " + str(e))
             return
 
+    def get_some_layers_at_index_as_list(self, layer_descr_list, latitude_index, longitude_index):
+        """
+        Returns a list containing the value of each layer at the specified location. The list is ordered according to
+        the given ``layer_descr_list``.
+
+        See also: :meth:`get_all_layers_at_index_as_list`, :meth:`set_all_layers_at_index_from_list`, \
+                    :meth:`set_some_layers_at_index_from_list`
+        """
+        self._raise_error_if_any_layer_does_not_exist(layer_descr_list)
+
+        value_dict = self.get_all_layers_at_index_as_dict(latitude_index, longitude_index)
+        value_list = []
+        for layer_descr in layer_descr_list:
+            value_list.append(value_dict[layer_descr])
+        return value_list
+
     def get_all_layers_at_index_as_list(self, latitude_index, longitude_index):
         """
         Returns a list containing the value of each layer at the specified location. The list is ordered according to
         the original `layer_descr_list`.
 
-        See also: :meth:`set_all_layers_at_index_from_list`.
+        See also: :meth:`get_some_layers_at_index_as_list`, :meth:`set_all_layers_at_index_from_list` \
+                    :meth:`set_some_layers_at_index_from_list`
         """
-        value_dict = self.get_all_layers_at_index_as_dict(latitude_index, longitude_index)
-        value_list = []
-        for layer_descr in self._layer_descr_list:
-            value_list.append(value_dict[layer_descr])
-        return value_list
+        return self.get_some_layers_at_index_as_list(self._layer_descr_list, latitude_index, longitude_index)
 
     def get_all_layers_at_index_as_dict(self, latitude_index, longitude_index):
         """
         Returns a dictionary containing the value of each layer at the specified location. The keys of the dictionary
         are taken from the original `layer_descr_list`.
 
-        See also: :meth:`set_all_layers_at_index_from_dict`.
+        See also: :meth:`get_all_layers_at_index_as_list`, :meth:`get_some_layers_at_index_as_list`, \
+                    :meth:`set_all_layers_at_index_from_dict`.
         """
         value_dict = {}
         for (layer_descr, layer) in self._layers.iteritems():
             value_dict[layer_descr] = layer.get_value_by_index(latitude_index, longitude_index)
         return value_dict
 
+    def get_some_layers_at_location_as_list(self, layer_descr_list, location):
+        """
+        Returns a list containing the value of each layer at the specified location. The list is ordered according to
+        the given `layer_descr_list`.
+        """
+        some_layer = self._layers.values()[0]
+        (latitude_index, longitude_index) = some_layer.get_indices_from_location(location)
+        return self.get_some_layers_at_index_as_list(layer_descr_list, latitude_index, longitude_index)
+
     def get_all_layers_at_location_as_list(self, location):
         """
         Returns a list containing the value of each layer at the specified location. The list is ordered according to
         the original `layer_descr_list`.
         """
-        some_layer = self._layers.values()[0]
-        (latitude_index, longitude_index) = some_layer.get_indices_from_location(location)
-        return self.get_all_layers_at_index_as_list(latitude_index, longitude_index)
+        return self.get_some_layers_at_location_as_list(self._layer_descr_list, location)
 
     def get_all_layers_at_location_as_dict(self, location):
         """
@@ -725,29 +753,40 @@ class DataMap3D(object):
         (latitude_index, longitude_index) = some_layer.get_indices_from_location(location)
         return self.get_all_layers_at_index_as_dict(latitude_index, longitude_index)
 
+    def set_some_layers_at_index_from_list(self, layer_descr_list, latitude_index, longitude_index, list_of_values):
+        """
+        Sets the value of each layer at the specified location. The list is assumed to be ordered according to the
+        original `layer_descr_list`.
+
+        See also: :meth:`set_all_layers_at_index_as_list`, :meth:`get_all_layers_at_index_from_list`, \
+                    :meth:`get_some_layers_at_index_from_list`
+        """
+        if len(list_of_values) is not len(layer_descr_list):
+            raise ValueError("Could not set values: expected %d values but got %d." % (len(self._layer_descr_list),
+                                                                                     len(list_of_values)))
+
+        dict_of_values = {}
+        for (descr, value) in zip(layer_descr_list, list_of_values):
+            dict_of_values[descr] = value
+        self.set_layers_at_index_from_dict(latitude_index, longitude_index, dict_of_values)
+
     def set_all_layers_at_index_from_list(self, latitude_index, longitude_index, list_of_values):
         """
         Sets the value of each layer at the specified location. The list is assumed to be ordered according to the
         original `layer_descr_list`.
 
-        See also: :meth:`get_all_layers_at_index_as_list`.
+        See also: :meth:`set_some_layers_at_index_as_list`, :meth:`get_all_layers_at_index_from_list` \
+                    :meth:`get_some_layers_at_index_from_list`
         """
-        if len(list_of_values) is not len(self._layer_descr_list):
-            self.log.error("Could not set values: expected %d values but got %d." % (len(self._layer_descr_list),
-                                                                                     len(list_of_values)))
-            return
+        self.set_some_layers_at_index_from_list(self._layer_descr_list, latitude_index, longitude_index, list_of_values)
 
-        dict_of_values = {}
-        for (descr, value) in zip(self._layer_descr_list, list_of_values):
-            dict_of_values[descr] = value
-        self.set_all_layers_at_index_from_dict(latitude_index, longitude_index, dict_of_values)
-
-    def set_all_layers_at_index_from_dict(self, latitude_index, longitude_index, dict_of_values):
+    def set_layers_at_index_from_dict(self, latitude_index, longitude_index, dict_of_values):
         """
         Sets the value of the layers at the specified location. The keys of the dictionary must correspond to the
         original `layer_descr_list`.
 
-        See also: :meth:`get_all_layers_at_index_as_dict`.
+        See also: :meth:`set_all_layers_at_index_as_list`, :meth:`set_some_layers_at_index_as_list`, \
+                    :meth:`get_all_layers_at_index_from_dict`.
         """
         for (descr, value) in dict_of_values:
             layer = self.get_layer(descr)
@@ -790,6 +829,44 @@ class DataMap3D(object):
         :rtype: :class:`DataMap2D`
         """
         return self._add_layers([self.get_layer(descr) for descr in layer_descrs])
+
+    def combine_values_elementwise_across_layers_using_function(self, combination_function, layer_descr_list=None):
+        """
+        Combines all of the values in the specified layers elementwise into a new :class:`DataMap2D` according to
+        ``combination_function``. Values which are not set (i.e. ``combination_function`` returns None) will be NaN.
+
+        Does not modify any existing data.
+
+        ``combination_function`` should have the following signature::
+
+            def combination_function(latitude, longitude, latitude_index, longitude_index, list_of_values_in_order):
+                # The list will be ordered according to 'layer_descr_list' (original list will be used if None provided)
+                ...
+                return combined_value_for_pixel      # may also return None to keep NaN value
+
+        :param combination_function: function used to update the values
+        :type combination_function: function object
+        :param layer_descr_list: list of layer descriptions that will be combined
+        :return: data map holding the combined values
+        :rtype: :class:`DataMap2D`
+        """
+        layer_descr_list = layer_descr_list or self._layer_descr_list
+        if len(layer_descr_list) == 0:
+            raise ValueError("Could not combine layers: no layer")
+        elif len(layer_descr_list) == 1:
+            raise ValueError("Could not combine layers: only one layer")
+
+        sample_datamap = self.get_layer(layer_descr_list[0])
+        destination_datamap = DataMap2D.get_copy_of(sample_datamap)
+        destination_datamap.reset_all_values(fill_value=numpy.NaN)
+
+        def pixel_update_function(latitude, longitude, latitude_index, longitude_index, current_value):
+            all_values = self.get_some_layers_at_index_as_list(layer_descr_list, latitude_index, longitude_index)
+            return combination_function(latitude, longitude, latitude_index, longitude_index, all_values)
+
+        destination_datamap.update_all_values_via_function(pixel_update_function, verbose=False)
+
+        return destination_datamap
 
     def reset_all_values(self, fill_value=numpy.NaN):
         """
