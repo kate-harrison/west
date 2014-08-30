@@ -9,6 +9,7 @@ import helpers
 from geopy.distance import vincenty
 from propagation_model import PropagationCurve
 from ruleset import Ruleset
+import data_map
 
 
 class RulesetFcc2012(Ruleset):
@@ -239,8 +240,8 @@ class RulesetFcc2012(Ruleset):
          The values are given in section 15.712(d) of the FCC's rules and the translation is implemented in this
          function.
 
-         .. warning:: This function assumes that the proposed operation is either cochannel or adjacent-channel. It does
-         not check channel assignments or proposals.
+         .. warning:: This function assumes that the proposed operation is either cochannel or adjacent-channel. It \
+                    does not check channel assignments or proposals.
 
         :param is_metro:
         :param is_cochannel:
@@ -261,10 +262,9 @@ class RulesetFcc2012(Ruleset):
         """
         Determines if a particular PLMRS entity is protected at the given location and on the specified channel.
 
-        .. warning:: Uses the PLMRS entity's bounding box (whose dimensions are set in
-         :class:`protected_entities_plmrs.ProtectedEntitiesPLMRS`) to speed up computations. If these
-         dimensions are too small, PLMRS entities will be erroneously excluded from this computation.
-
+        .. warning:: Uses the PLMRS entity's bounding box (whose dimensions are set in \
+                    :class:`protected_entities_plmrs.ProtectedEntitiesPLMRS`) to speed up computations. If these \
+                    dimensions are too small, PLMRS entities will be erroneously excluded from this computation.
 
         :param plmrs_entry: the PLMRS entity to be protected
         :type plmrs_entry: :class:`protected_entity_plmrs.ProtectedEntityPLMRS` object
@@ -767,4 +767,82 @@ class RulesetFcc2012(Ruleset):
             return 2.4
 ####
 #   END TV STATION PROTECTION -- TABLE IMPLEMENTATIONS
+####
+
+####
+#   TV VIEWERSHIP CALCULATIONS
+####
+
+    def tv_station_is_viewable(self, tv_station, location):
+        """
+        Determines if a particular TV station is viewable at the given location.
+
+        .. note:: The TV station's channel is not checked. It is assumed that the TV station is on the channel of \
+                    interest.
+
+        .. warning:: Uses the TV station's bounding box (whose dimensions are set in \
+                    :class:`protected_entities_tv_stations.ProtectedEntitiesTVStations`) to speed up computations. If \
+                    these dimensions are too small, TV stations will be erroneously excluded from this computation.
+        """
+        if not tv_station.location_in_bounding_box(location):
+            return False
+
+        actual_distance_km = vincenty(tv_station.get_location(), location).kilometers
+        protection_distance_km = self.get_tv_protected_radius_km(tv_station, location)
+
+        return actual_distance_km <= protection_distance_km
+
+    def create_tv_viewership_datamap(self, region, is_in_region_datamap2d, channel, list_of_tv_stations=None,
+                                     verbose=False):
+        """
+        Creates a :class:`data_map.DataMap2D` which is True (or truthy) where TV can be viewed and False elsewhere
+        (including outside the region). If not specified, the list of TV stations is taken from ``region``. If
+        specified, only the TV stations in the list are considered.
+
+        The output DataMap2D properties will be taken from ``is_in_region_datamap2d``. No input data is modified in this
+        calculation.
+
+        :param region: region containing the protected entities
+        :type region: :class:`region.Region` object
+        :param is_in_region_datamap2d: DataMap2D which has value True (or a truthy value) inside the region's boundary \
+                and False outside. This is purely to speed up computations by skipping locations that do not matter.
+        :type is_in_region_datamap2d: :class:`data_map.DataMap2D` object
+        :param channel: channel to be tested for viewership
+        :type channel: int
+        :param verbose: if True, progress updates will be logged (level = INFO); otherwise, nothing will be logged
+        :type verbose: bool
+        :return: datamap holding values representing TV viewership
+        :rtype: :class:`data_map.DataMap2D`
+        """
+
+        viewership_map = data_map.DataMap2D.get_copy_of(is_in_region_datamap2d)
+        viewership_map.reset_all_values(0)
+
+        # Use the TV stations from the region if no list is provided
+        if list_of_tv_stations is None:
+            all_tv_stations = region.get_protected_entities_of_type(ProtectedEntitiesTVStations)
+            list_of_tv_stations = all_tv_stations.get_list_of_entities_on_channel(channel)
+
+        def tv_station_viewership_update_function(latitude, longitude, latitude_index, longitude_index,
+                                                  currently_viewable):
+            """Returns True if TV can be viewed at this location and False otherwise. Returns None if the location is
+            already listed as viewable."""
+            if not is_in_region_datamap2d.get_value_by_index(latitude_index, longitude_index):
+                return False        # outside of the US is defined as not viewable
+            if currently_viewable:
+                return None         # don't update if it is already known that TV is viewable at this location
+
+            for station in list_of_tv_stations:
+                if not station.get_channel() == channel:
+                    continue
+                if self.tv_station_is_viewable(station, (latitude, longitude)):
+                    return True
+
+            return False
+
+        viewership_map.update_all_values_via_function(tv_station_viewership_update_function, verbose=verbose)
+        return viewership_map
+
+####
+#   TV VIEWERSHIP CALCULATIONS
 ####
