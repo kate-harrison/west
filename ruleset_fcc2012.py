@@ -514,7 +514,9 @@ class RulesetFcc2012(Ruleset):
                     if channel == entity.get_channel():
                         location_is_whitespace &= \
                             not self.cochannel_tv_station_is_protected(entity, location, device.get_haat())
-                    elif helpers.channels_are_adjacent_in_frequency(region, entity.get_channel(), channel):
+                    # Portable devices are not subjected to adjacent-channel exclusions
+                    elif not device.is_portable() and \
+                            helpers.channels_are_adjacent_in_frequency(region, entity.get_channel(), channel):
                         location_is_whitespace &= \
                             not self.adjacent_channel_tv_station_is_protected(entity, location, device.get_haat())
                     else:
