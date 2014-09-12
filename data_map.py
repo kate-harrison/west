@@ -441,15 +441,14 @@ class DataMap2D(object):
             return pickle.load(f)
 
     # Helper functions required for pickling
-    # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving and
-    # add them back when loading the object
+    # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving
     def __getstate__(self):
-        del self.log
-        return self.__dict__
+        state = self.__dict__.copy()
+        del state['log']
+        return state
 
     def __setstate__(self, d):
         self.__dict__.update(d)
-        self.log = getModuleLogger(self)
 #####
 #   END DATA EXPORT
 #####
@@ -912,12 +911,11 @@ class DataMap3D(object):
             return pickle.load(f)
 
     # Helper functions required for pickling
-    # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving and
-    # add them back when loading the object
+    # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving
     def __getstate__(self):
-        del self.log
-        return self.__dict__
+        state = self.__dict__.copy()
+        del state['log']
+        return state
 
     def __setstate__(self, d):
         self.__dict__.update(d)
-        self.log = getModuleLogger(self)
