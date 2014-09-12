@@ -12,7 +12,8 @@ class DataMap2D(object):
         self.log = getModuleLogger(self)
 
     @classmethod
-    def from_specification(cls, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions):
+    def from_specification(cls, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions,
+                           verbose=True):
         """
         :param latitude_bounds: (min_latitude, max_latitude)
         :param longitude_bounds: (min_longitude, max_longitude)
@@ -24,11 +25,12 @@ class DataMap2D(object):
         :rtype: :class:`DataMap2D`
         """
         obj = cls()
-        obj._initialize(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions)
+        obj._initialize(latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions,
+                        verbose=verbose)
         return obj
 
     @classmethod
-    def get_copy_of(cls, other_datamap2d):
+    def get_copy_of(cls, other_datamap2d, verbose=True):
         """
         Creates a copy of the :class:`DataMap2D`. The internal matrix will also be copied.
 
@@ -39,12 +41,13 @@ class DataMap2D(object):
         """
         obj = cls.from_specification(other_datamap2d._latitude_bounds, other_datamap2d._longitude_bounds,
                                      other_datamap2d._num_latitude_divisions,
-                                     other_datamap2d._num_longitude_divisions)
+                                     other_datamap2d._num_longitude_divisions,
+                                     verbose=verbose)
         obj.mutable_matrix = other_datamap2d.mutable_matrix
         return obj
 
     @classmethod
-    def from_existing_DataMap2D(cls, other_datamap2d, matrix):
+    def from_existing_DataMap2D(cls, other_datamap2d, matrix, verbose=True):
         """
         Uses everything from ``other_datamap2d`` except that the values are copied from ``matrix``. If ``matrix`` is a
         scalar, all values will be initialized to that value.
@@ -58,7 +61,8 @@ class DataMap2D(object):
         """
         obj = cls.from_specification(other_datamap2d._latitude_bounds, other_datamap2d._longitude_bounds,
                                      other_datamap2d._num_latitude_divisions,
-                                     other_datamap2d._num_longitude_divisions)
+                                     other_datamap2d._num_longitude_divisions,
+                                     verbose=verbose)
         if isinstance(matrix, numpy.matrix):
             obj.mutable_matrix = matrix
         else:
@@ -66,11 +70,9 @@ class DataMap2D(object):
         return obj
 
     def _initialize(self, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions,
-                    data_type=float):
-        self.log.debug("Creating DataMap2D:" +
-                       "\nLatitude bounds: (%f, %f) (%d divisions)\nLongitude bounds: (%f, %f) (%d divisions)"
-                       % (latitude_bounds[0], latitude_bounds[1], num_latitude_divisions, longitude_bounds[0],
-                          longitude_bounds[1], num_longitude_divisions))
+                    data_type=float, verbose=True):
+        if verbose:
+            self.log.debug("Creating %dx%d data map" % (num_latitude_divisions, num_longitude_divisions))
 
         (min_lat, max_lat) = latitude_bounds
         if min_lat > max_lat:
@@ -664,9 +666,12 @@ class DataMap3D(object):
         self._layer_descr_list = layer_descr_list
 
         datamap_class = template_datamap2d.__class__
+        self.log.debug("Creating DataMap3D (template: %s %dx%d) (layers: %s)"
+                       % (datamap_class.__name__, template_datamap2d._num_latitude_divisions,
+                          template_datamap2d._num_longitude_divisions, layer_descr_list))
 
         for layer_descr in layer_descr_list:
-            self._layers[layer_descr] = datamap_class.get_copy_of(template_datamap2d)
+            self._layers[layer_descr] = datamap_class.get_copy_of(template_datamap2d, verbose=False)
 
         if len(self._layers.keys()) is not len(layer_descr_list):
             self.log.warning("Incorrect number of layers created; duplicate keys?")
