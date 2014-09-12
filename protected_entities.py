@@ -7,10 +7,9 @@ class ProtectedEntities(object):
     """Protected entities: a collection of protected entities."""
     __metaclass__ = ABCMeta
 
-    def __init__(self, simulation, region):
+    def __init__(self, region):
         self.log = getModuleLogger(self)
 
-        self.simulation = simulation
         self.region = region
 
         self._reset_entities()

@@ -25,4 +25,3 @@ import region
 import region_united_states
 import ruleset
 import ruleset_fcc2012
-import simulation

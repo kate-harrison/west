@@ -27,13 +27,13 @@ class RegionUnitedStates(Region):
     # @doc_inherit
     def _load_protected_entities(self):
         self.protected_entities[protected_entities_tv_stations.ProtectedEntitiesTVStations] = \
-            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(self.simulation, self)
+            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(self)
 
         self.protected_entities[protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
-            protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self.simulation, self)
+            protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self)
 
         self.protected_entities[protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySites] = \
-            protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates(self.simulation, self)
+            protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates(self)
 
     # @doc_inherit
     def get_frequency_bounds(self, channel):

@@ -14,9 +14,8 @@ class Boundary(object):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, simulation=None):
+    def __init__(self):
         self.log = getModuleLogger(self)
-        self.simulation = simulation
 
         self._geometries = []
 

@@ -1,9 +1,8 @@
 from protected_entities_radio_astronomy_sites import ProtectedEntitiesRadioAstronomySitesUnitedStates
 from region_united_states import RegionUnitedStates
 
-simulation = None
-region = RegionUnitedStates(simulation)
-# pe = ProtectedEntitiesRadioAstronomySitesUnitedStates(simulation, region)
+region = RegionUnitedStates()
+# pe = ProtectedEntitiesRadioAstronomySitesUnitedStates(region)
 
 
 

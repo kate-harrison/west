@@ -7,9 +7,8 @@ class Region(object):
     """Region"""
     __metaclass__ = ABCMeta
 
-    def __init__(self, simulation=None):
+    def __init__(self):
         self.log = getModuleLogger(self)
-        self.simulation = simulation
 
         self._boundary = None
 
@@ -50,7 +49,7 @@ class Region(object):
 
     def _load_boundary(self):
         boundary_class = self._get_boundary_class()
-        self._boundary = boundary_class(self.simulation)
+        self._boundary = boundary_class()
 
     def _load_economic_data(self):  # TODO: write this function
         pass

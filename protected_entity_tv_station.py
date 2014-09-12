@@ -117,7 +117,7 @@ class ProtectedEntityTVStation(ProtectedEntity):
         Returns True if `channel` is adjacent to this station's channel and False otherwise. See also
         :meth:`helpers.channels_are_adjacent_in_frequency`.
         """
-        return helpers.channels_are_adjacent_in_frequency(self.container.simulation.get_mutable_region(), self._channel, channel)
+        return helpers.channels_are_adjacent_in_frequency(self.container.get_mutable_region(), self._channel, channel)
 
     def add_to_kml(self, kml):
         point = kml.newpoint()

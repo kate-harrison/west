@@ -4,9 +4,8 @@ from custom_logging import getModuleLogger
 class Ruleset(object):
     """Ruleset"""
 
-    def __init__(self, simulation=None):
+    def __init__(self):
         self.log = getModuleLogger(self)
-        self._simulation = simulation
 
         self.set_propagation_model()
 

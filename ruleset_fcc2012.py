@@ -378,7 +378,7 @@ class RulesetFcc2012(Ruleset):
 #   GENERAL WHITESPACE CALCULATIONS
 ####
 
-    def location_is_whitespace(self, region, location, channel, device=None):
+    def location_is_whitespace(self, region, location, channel, device):
         """
         Determines whether a location is considered whitespace, taking all protections into account (*except* wireless
         microphones).
@@ -399,7 +399,6 @@ class RulesetFcc2012(Ruleset):
 
         # TODO: think about how to add wireless microphone protections (the 2 extra channels)
 
-        device = device or self._simulation.get_mutable_device()
         device_haat = device.get_haat()
 
         #protected_entities = region.protected_entities()
