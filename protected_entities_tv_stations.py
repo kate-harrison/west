@@ -98,7 +98,6 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
         print(helpers.horizontal_separator)
 
 
-
 class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
     """Defines some of the common properties of US TV stations."""
 
@@ -119,6 +118,76 @@ class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
         :rtype: float
         """
         return 200.0
+
+
+class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(ProtectedEntitiesTVStationsUnitedStates):
+    """This class contains TV stations read from the FCC's Baseline file for the incentive auctions. The file can be
+    found at http://data.fcc.gov/download/incentive-auctions/Constraint_Files/ (specifically at
+    http://data.fcc.gov/download/incentive-auctions/Constraint_Files/US_Station_Baseline_2014May20.xlsx).
+    """
+    def source_filename(self):
+        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        return os.path.join(base_directory, 'us_station_baseline_2014may20 - US Stations.csv')
+
+    def source_name(self):
+        return "US Station Incentive Auction Baseline May 20, 2014 " + \
+               "[http://data.fcc.gov/download/incentive-auctions/Constraint_Files/]"
+
+    def _load_entities(self):
+        """
+        Column headers + example data (copied from spreadsheet)
+        More information about the columns is available in the original .xlsx file.
+
+        channel	service	country	state	city	lat	lon	fac_callsign	arn	app_id	haat	da	erp	facility_id	rcamsl	ref az	ant_id
+        5	DT	US	AK	ANCHORAGE	612011	1493047	KYES-TV	BLCDT20110307ACV	1565982	277	DA	15	21488	614.5	0	93311
+        """
+        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
+
+        def convert_dms_to_decimal(degrees, minutes, seconds):
+            return degrees + minutes/60 + seconds/3600
+
+        with open(self.source_filename(), 'r') as f:
+            station_csv = csv.DictReader(f)
+            for station in station_csv:
+                tx_type = station['service']
+
+                if tx_type in self.ignored_tv_types():
+                    self.log.debug("Skipping TV station because its type is ignored: %s" % tx_type)
+                    continue
+
+                try:
+                    # Lat/lon are in format DDDMMSS
+                    lat_string = station['lat']
+                    lat_sec = float(lat_string[-2:])
+                    lat_min = float(lat_string[-4:-2])
+                    lat_deg = float(lat_string[:-4])
+                    latitude = convert_dms_to_decimal(lat_deg, lat_min, lat_sec)
+
+                    lon_string = station['lon']
+                    lon_sec = float(lon_string[-2:])
+                    lon_min = float(lon_string[-4:-2])
+                    lon_deg = float(lon_string[:-4])
+                    longitude = convert_dms_to_decimal(lon_deg, lon_min, lon_sec) * -1
+
+                    channel = int(station['channel'])
+                    ERP = float(station['erp'])     # in kW
+                    haat = float(station['haat'])   # in meters
+                except Exception as e:
+                    self.log.error("Error loading station: ", str(e))
+                    continue
+
+                new_station = ProtectedEntityTVStation(self, self.get_mutable_region(), latitude=latitude,
+                                                       longitude=longitude, channel=channel, ERP_Watts=ERP,
+                                                       HAAT_meters=haat, tx_type=tx_type)
+
+                # Add optional information
+                new_station.add_facility_id(station['facility_id'])
+                new_station.add_callsign(station['fac_callsign'])
+
+                new_station._application_id_number = station['app_id']
+
+                self._add_entity(new_station)
+
 
 class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStationsUnitedStates):
     """This class contains TV stations as read from the TV Query website. Subclasses will contain data from a particular
