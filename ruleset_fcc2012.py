@@ -417,8 +417,8 @@ class RulesetFcc2012(Ruleset):
 
         return True
 
-    def turn_datamap_into_whitespace_map(self, region, is_whitespace_datamap2d, channel, device,
-                                         ignore_channel_restrictions=False, reset_datamap=False, verbose=False):
+    def apply_all_protections_to_map(self, region, is_whitespace_datamap2d, channel, device,
+                                     ignore_channel_restrictions=False, reset_datamap=False, verbose=False):
         """
         Turns the input :class:`data_map.DataMap2D` into a map of whitespace availability. A value of `True` means that
         whitespace is available in that location, whereas a value of `False` means that that location is not considered

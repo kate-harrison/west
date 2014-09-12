@@ -392,8 +392,8 @@ class SpecificationWhitespaceMap(Specification):
         whitespace_datamap3d = DataMap3D.from_DataMap2D(region_datamap, channel_list)
         for channel in channel_list:
             channel_layer = whitespace_datamap3d.get_layer(channel)
-            self.ruleset_object.turn_datamap_into_whitespace_map(self.region_object, channel_layer, channel,
-                                                                 self.device_object)
+            self.ruleset_object.apply_all_protections_to_map(self.region_object, channel_layer, channel,
+                                                             self.device_object)
 
         self.save_data(whitespace_datamap3d)
         return whitespace_datamap3d
