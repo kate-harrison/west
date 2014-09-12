@@ -4,7 +4,7 @@ from device import Device
 from propagation_model import PropagationModel
 from region import Region
 from boundary import Boundary
-from data_map import DataMap2D, DataMap3D
+from data_map import DataMap2D, DataMap3D, DataMap2DWithFixedBoundingBox
 from population import PopulationData
 from custom_logging import getModuleLogger
 import os
@@ -251,20 +251,16 @@ class Specification(object):
 
 class SpecificationDataMap(Specification):
     """
-    This Specification describes a :class:`data_map.DataMap2D` or :class:`data_map.DataMap3D`. The Specification must
-    be created with a derived class, e.g. :class:`data_map.DataMap2DContinentalUnitedStates`.
+    This Specification describes a :class:`data_map.DataMap2D`. The Specification must be created with a class derived
+    from :class:`data_map.DataMap2DWithFixedBoundingBox`, e.g. :class:`data_map.DataMap2DContinentalUnitedStates`.
 
     Unlike other classes, it will *always* create a new DataMap2D/DataMap3D when "making" or fetching data. Data will
     never be saved.
     """
     def __init__(self, datamap_derived_class, num_latitude_divisions, num_longitude_divisions):
-        self._expect_of_type(datamap_derived_class, [DataMap2D, DataMap3D])
+        self._expect_of_type(datamap_derived_class, DataMap2DWithFixedBoundingBox)
         self._expect_of_type(num_latitude_divisions, int)
         self._expect_of_type(num_longitude_divisions, int)
-
-        if datamap_derived_class is DataMap2D or datamap_derived_class is DataMap3D:
-            raise TypeError("The DataMap2D class must be a derived class which specified the latitude and longitude "
-                            "bounds of the data map.")
 
         self._store_at_least_class("datamap", datamap_derived_class)
         self.num_latitude_divisions = num_latitude_divisions

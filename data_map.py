@@ -574,11 +574,11 @@ class DataMap2D(object):
 #   END SUBMAPS
 #####
 
-
-class DataMap2DContinentalUnitedStates(DataMap2D):
+class DataMap2DWithFixedBoundingBox(DataMap2D):
     """:class:`DataMap2D` with presets bounds for the continental United States."""
+
     @classmethod
-    def create(cls, num_latitude_divisions=200, num_longitude_divisions=300):
+    def create(cls, num_latitude_divisions=None, num_longitude_divisions=None):
         """
         Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to the continental United States.
 
@@ -589,51 +589,41 @@ class DataMap2DContinentalUnitedStates(DataMap2D):
         :return:
         :rtype: :class:`DataMap2DContinentalUnitedStates`
         """
-        latitude_bounds = [24.5, 49.38]
-        longitude_bounds = [-124.77, -66]
-        return DataMap2D.from_specification(latitude_bounds, longitude_bounds, num_latitude_divisions,
-                                            num_longitude_divisions)
+        if not hasattr(cls, "latitude_bounds") or not hasattr(cls, "longitude_bounds"):
+            raise AttributeError("Derived class must specify the latitude and longitude bounds.")
+
+        if not hasattr(cls, "default_num_latitude_divisions") or not hasattr(cls, "default_num_longitude_divisions"):
+            raise AttributeError("Derived class must specify the default number of latitude and longitude divisions.")
+
+        num_latitude_divisions = num_latitude_divisions or cls.default_num_latitude_divisions
+        num_longitude_divisions = num_longitude_divisions or cls.default_num_longitude_divisions
+
+        return cls.from_specification(cls.latitude_bounds, cls.longitude_bounds, num_latitude_divisions,
+                                      num_longitude_divisions)
 
 
-class DataMap2DBayArea(DataMap2D):
+class DataMap2DContinentalUnitedStates(DataMap2DWithFixedBoundingBox):
+    """:class:`DataMap2D` with presets bounds for the continental United States."""
+    latitude_bounds = [24.5, 49.38]
+    longitude_bounds = [-124.77, -66]
+    default_num_latitude_divisions = 200
+    default_num_longitude_divisions = 300
+
+
+class DataMap2DBayArea(DataMap2DWithFixedBoundingBox):
     """:class:`DataMap2D` with presets bounds for the Bay Area of the United States."""
-    @classmethod
-    def create(cls, num_latitude_divisions=50, num_longitude_divisions=50):
-        """
-        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to the continental United States.
-
-        :param num_latitude_divisions: number of latitude points per longitude
-        :type num_latitude_divisions: int
-        :param num_longitude_divisions: number of longitude points per latitude
-        :type num_longitude_divisions: int
-        :return:
-        :rtype: :class:`DataMap2DBayArea`
-        """
-        latitude_bounds = [37.2, 38.4]
-        longitude_bounds = [-123.2, -121]
-        return DataMap2D.from_specification(latitude_bounds, longitude_bounds, num_latitude_divisions,
-                                            num_longitude_divisions)
+    latitude_bounds = [37.2, 38.4]
+    longitude_bounds = [-123.2, -121]
+    default_num_latitude_divisions = 50
+    default_num_longitude_divisions = 50
 
 
-class DataMap2DWisconsin(DataMap2D):
+class DataMap2DWisconsin(DataMap2DWithFixedBoundingBox):
     """:class:`DataMap2D` with presets bounds for Wisconsin, United States."""
-    @classmethod
-    def create(cls, num_latitude_divisions=50, num_longitude_divisions=50):
-        """
-        Creates a :class:`DataMap2D` with latitude and longitude bounds tailored to Wisconsin.
-
-        :param num_latitude_divisions: number of latitude points per longitude
-        :type num_latitude_divisions: int
-        :param num_longitude_divisions: number of longitude points per latitude
-        :type num_longitude_divisions: int
-        :return:
-        :rtype: :class:`DataMap2DWisconsin`
-        """
-        latitude_bounds = [42.5, 47]
-        longitude_bounds = [-93.5, -87]
-        return DataMap2D.from_specification(latitude_bounds, longitude_bounds, num_latitude_divisions,
-                                            num_longitude_divisions)
-
+    latitude_bounds = [42.5, 47]
+    longitude_bounds = [-93.5, -87]
+    default_num_latitude_divisions = 50
+    default_num_longitude_divisions = 50
 
 class DataMap3D(object):
     """Collection of one or more :class:`DataMap2D` objects. Provides convenient setter and getter functions for these
