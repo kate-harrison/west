@@ -7,7 +7,7 @@ class Region(object):
     """Region"""
     __metaclass__ = ABCMeta
 
-    def __init__(self, simulation):
+    def __init__(self, simulation=None):
         self.log = getModuleLogger(self)
         self.simulation = simulation
 

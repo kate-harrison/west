@@ -1,4 +1,5 @@
 from propagation_model import PropagationModel, PropagationCurve
+from configuration import package_directory
 from ctypes import *
 import os.path
 from math import log10
@@ -129,7 +130,7 @@ class PropagationModelFcurves(PropagationModel):
 #   LIBRARY FUNCTIONS
 ####
     def _initialize_fcurve_library_and_function(self):
-        shared_object_path = os.path.join("propagation_models", "fcurves", "curves_subroutines.so")
+        shared_object_path = os.path.join(package_directory, "propagation_models", "fcurves", "curves_subroutines.so")
         cdll.LoadLibrary(shared_object_path)
         fcurves_lib = CDLL(shared_object_path)
         self._initialize_library_functions(fcurves_lib)

@@ -452,7 +452,7 @@ class RulesetFcc2012(Ruleset):
             is_whitespace_datamap2d.reset_all_values(True)
 
         if not ignore_channel_restrictions:
-            self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device, verbose=verbose)
+            self.apply_channel_restrictions_to_map(region, is_whitespace_datamap2d, channel, device)
 
         self.apply_radioastronomy_exclusions_to_map(region, is_whitespace_datamap2d, verbose=verbose)
         self.apply_plmrs_exclusions_to_map(region, is_whitespace_datamap2d, channel, verbose=verbose)

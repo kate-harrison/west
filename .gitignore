@@ -16,10 +16,12 @@ include/*
 #Misc files
 *.swp
 *.pcl
+*.pkl
 *.kml
 *.pdf
 *.pyc
 *.zip
+*.png
 
 #Project files
 old/*
