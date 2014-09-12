@@ -677,6 +677,16 @@ class DataMap3D(object):
             if layer_descr not in self._layer_descr_list:
                 raise AttributeError("Layer does not exist: %s" % str(layer_descr))
 
+    def _raise_error_if_incomparable_to_internal_datamaps(self, other_datamap2d):
+        """Tests a :class:`DataMap2D` object for comparability (i.e. are they describing the same points?) with the
+        internal DataMap2D objects. Raises a ValueError if they are incomparable.
+
+        :param other_datamap2d:
+        :type other_datamap2d: :class:`DataMap2D`
+        """
+        existing_datamap2d = self.get_layer(self._layer_descr_list[0])
+        existing_datamap2d.raise_error_if_datamaps_are_incomparable(other_datamap2d)
+
     def get_layer(self, layer_descr):
         """
         Retrieve a layer based on its description (key).
@@ -699,6 +709,32 @@ class DataMap3D(object):
         old_layer.raise_error_if_datamaps_are_incomparable(new_layer)
 
         self._layers[layer_descr] = new_layer
+
+    def append_layer(self, layer_descr, layer):
+        """
+        Append a layer (:class:`DataMap2D`) to the DataMap3D object. The layer must be comparable with existing layers.
+        A layer which is already stored in this DataMap3D may not be appended.
+
+        See also: :meth:`append_layers`, :meth:`set_layer`
+        """
+        self._raise_error_if_incomparable_to_internal_datamaps(layer)
+        if layer_descr in self._layer_descr_list:
+            raise KeyError("Layer with description '%s' already exists" % str(layer_descr))
+
+        for existing_layer in self._layers.values():
+            if layer == existing_layer:
+                raise ValueError("Cannot append a DataMap2D instance that is already part of this DataMap3D (error "
+                                 "encountered for layer with description '%s')." % layer_descr)
+
+        self._layer_descr_list.append(layer_descr)
+        self._layers[layer_descr] = layer
+
+    def append_layers(self, layer_descr_list, layer_list):
+        """
+        Append multiple layers to this DataMap3D. Layers will be appended in order. See also: :meth:`append_layer`.
+        """
+        for layer_descr, layer in zip(layer_descr_list, layer_list):
+            self.append_layer(layer_descr, layer)
 
     def get_some_layers_at_index_as_list(self, layer_descr_list, latitude_index, longitude_index):
         """
