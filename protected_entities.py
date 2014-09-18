@@ -113,15 +113,17 @@ class ProtectedEntities(object):
         pass
 
 
-    def export_to_kml(self, kml_filename, save=True, filter_function=None):
+    def export_to_kml(self, kml_filename, filter_function=None, group_by_channel=True, save=True):
             """
             Exports the ProtectedEntities as a KML file. If ``filter_function`` is provided, includes only entities for
             which ``filter_function(entity)`` returns True or a "truthy" value.
 
-            :param save: if True, saves the file using the filename provided by :meth:`kml_filename`.
-            :type save: boolean
             :param filter_function: handle to a function which returns True for entities which should be kept and\
              False otherwise; takes a single argument of type :class:`ProtectedEntity`.
+            :param group_by_channel: if True, groups entities into folders by channel number
+            :type group_by_channel: boolean
+            :param save: if True, saves the file using the filename provided by :meth:`kml_filename`.
+            :type save: boolean
             :return:
             :rtype: KML object (e.g. output from :meth:`simplekml.Kml`)
             """
@@ -131,8 +133,18 @@ class ProtectedEntities(object):
                 list_of_entities = [entity for entity in list_of_entities if filter_function(entity)]
 
             kml = simplekml.Kml()
+
+            if group_by_channel:
+                folders = {}
+                for channel in self.region.get_channel_list():
+                    folders[channel] = kml.newfolder(name="Channel %d" % channel)
+
             for entity in list_of_entities:
-                entity.add_to_kml(kml)
+                if group_by_channel:
+                    channel = entity.get_channel()
+                    entity.add_to_kml(folders[channel])
+                else:
+                    entity.add_to_kml(kml)
 
             if save:
                 kml.save(kml_filename)
