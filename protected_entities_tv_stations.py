@@ -183,8 +183,7 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(P
                 # Add optional information
                 new_station.add_facility_id(station['facility_id'])
                 new_station.add_callsign(station['fac_callsign'])
-
-                new_station._application_id_number = station['app_id']
+                new_station.add_app_id(station['app_id'])
 
                 self._add_entity(new_station)
 
@@ -228,6 +227,7 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
         column_number['lon_min'] = 25
         column_number['lon_sec'] = 26
         column_number['km_offset'] = 28
+        column_number['app_id'] = -3
 
         def convert_dms_to_decimal(degrees, minutes, seconds):
             return degrees + minutes/60 + seconds/3600
@@ -322,6 +322,8 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                 new_station.add_facility_id(station_row[column_number['facility_id']].strip())
                 new_station.add_callsign(callsign)
 
+                new_station.add_app_id(station_row[column_number['app_id']].strip())
+
                 # Add it to the internal list
                 self._add_entity(new_station)
 
@@ -391,5 +393,6 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
                 # Add optional information
                 new_station.add_facility_id(station['facility_id'])
                 new_station.add_callsign(station['uid'])
+                new_station.add_app_id(station['application_id'])
 
                 self._add_entity(new_station)

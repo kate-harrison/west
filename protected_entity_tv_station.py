@@ -4,7 +4,8 @@ import helpers
 class ProtectedEntityTVStation(ProtectedEntity):
     """TV station"""
 
-    required_properties = ["_latitude", "_longitude", "_channel", "_ERP_Watts", "_HAAT_meters", "_tx_type"]
+    required_properties = ["_latitude", "_longitude", "_channel", "_ERP_Watts", "_HAAT_meters", "_tx_type",
+                           "_facility_id", "_callsign", "_app_id"]
 
     def __init__(self, container, region, latitude, longitude, channel, ERP_Watts, HAAT_meters, tx_type):
         super(ProtectedEntityTVStation, self).__init__(region, container, latitude, longitude)
@@ -23,6 +24,7 @@ class ProtectedEntityTVStation(ProtectedEntity):
         # Optional information that can be added later
         self._facility_id = None
         self._callsign = None
+        self._app_id = None
 
         self._log_error_if_necessary_data_missing()
 
@@ -37,6 +39,7 @@ class ProtectedEntityTVStation(ProtectedEntity):
         output += "ERP (kW): %.2f" % (self._ERP_Watts/1000) + "\t"
         output += "HAAT (m): %f" % self._HAAT_meters + "\n"
         output += "Callsign: %s" % str(self._callsign) + "\n"
+        output += "Application ID: %s" % str(self.get_app_id()) + "\n"
 
         return output
 
@@ -62,6 +65,14 @@ class ProtectedEntityTVStation(ProtectedEntity):
         """
         Returns a string containing the callsign associated with the TV station (if any) or None.
         """
+
+    def add_app_id(self, app_id):
+        """Add the application ID associated with the TV station."""
+        self._app_id = app_id
+
+    def get_app_id(self):
+        """Returns a string containing the application ID associated with this TV station (if any) or None."""
+        return self._app_id
 
     def get_location(self):
         return (self._latitude, self._longitude)
