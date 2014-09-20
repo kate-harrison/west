@@ -382,8 +382,8 @@ class DataMap2D(object):
         :rtype: :class:`simplekml.Kml`
         """
 
-        latitude_width = abs(self._latitudes[1] - self._latitudes[0])
-        longitude_width = abs(self._longitudes[1] - self._longitudes[0])
+        latitude_width = float(abs(self._latitudes[1] - self._latitudes[0]))
+        longitude_width = float(abs(self._longitudes[1] - self._longitudes[0]))
 
         def make_box(kml, center_lat, center_lon, value):
 
@@ -440,7 +440,10 @@ class DataMap2D(object):
         :rtype: :class:`DataMap2D`
         """
         with open(filename, "r") as f:
-            return pickle.load(f)
+            obj = pickle.load(f)
+            if not hasattr(obj, 'log'):
+                obj.log = getModuleLogger(obj)
+            return obj
 
     # Helper functions required for pickling
     # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving
@@ -939,7 +942,10 @@ class DataMap3D(object):
         :rtype: :class:`DataMap3D`
         """
         with open(filename, "r") as f:
-            return pickle.load(f)
+            obj = pickle.load(f)
+            if not hasattr(obj, 'log'):
+                obj.log = getModuleLogger(obj)
+            return obj
 
     # Helper functions required for pickling
     # Objects with open file descriptors (e.g. logs) cannot be pickled, so we remove the logs when saving
