@@ -15,6 +15,7 @@ def add_paths_for_region(region_name):
     paths[region_name]['base'] = region_base_dir
     paths[region_name]['boundaries'] = os.path.join(region_base_dir, boundaries_directory_name)
     paths[region_name]['protected_entities'] = os.path.join(region_base_dir, protected_entities_directory_name)
+    paths[region_name]['population'] = os.path.join(region_base_dir, "Population")
 
 
 paths = {}

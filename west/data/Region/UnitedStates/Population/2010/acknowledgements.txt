@@ -1,0 +1,29 @@
+The authors of this project would like to acknowledge Harrison Dekker of the Data Lab at UC Berkeley for his assistance in gathering the population data. He downloaded the source data and wrote the Python scripts to extract the relevant data (saved as popbytract2000.csv and popbytract2010.csv).
+
+The following are his notes on the data sources and extraction methods:
+
+
+Comments on 2010 data:
+-----------------------------------------
+I'm attaching the tract data for 2010. It contains the following fields:
+LOGRECNO  (ignore)
+GEOID   -  state + county + tract fips code
+AREALAND 
+AREAWATR
+POP100 - total population
+HU100 - total housing units
+
+I'm sending the code, but it will require some modification to work with 2000. If you want to go ahead and grab all the 2000 data using wget, here's the url (you'll have to use the recursive option):
+
+http://www2.census.gov/census_2000/datasets/redistricting_file--pl_94-171/
+
+
+
+
+Comments on 2000 data:
+-----------------------------------------
+In order to get total households I used data from Summary File 1. It's a much bigger dataset (something like 40 zipped files per state) but I had already downloaded the files containing the variables you need for another project. Specifically, I crawled (using wget) the directories below this url: http://www2.census.gov/census_2000/datasets/Summary_File_1/. The script only requires that the state directories contain the file with the name pattern xxgeo_uf1.zip (xx is the two letter state code). 
+
+No alterations were made to any file or directory names after I downloaded them and the script only needs the path to the directory containing the state directories as a parameter.
+
+
