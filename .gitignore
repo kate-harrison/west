@@ -23,14 +23,12 @@ include/*
 *.zip
 *.png
 
+# Large data files
+*gz_2010*
+
 #Project files
 old/*
-old_py/*
 output/*
-profiles/*
-test/*
-test*.py
-with_doc_inherit/*
 documentation/*
 propagation_models/fcurves/old/*
 *.so
