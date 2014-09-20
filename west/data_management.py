@@ -10,7 +10,8 @@ from custom_logging import getModuleLogger
 import os
 import textwrap
 
-base_data_directory = "data"
+from configuration import base_data_directory
+# base_data_directory = "data"
 
 
 def _is_class(obj):
