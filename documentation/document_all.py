@@ -4,7 +4,7 @@ import subprocess
 
 # See http://mainlydata.kubadev.com/python/sphinx-how-to-make-autodoc-really-automatic/
 
-source_directories = [os.path.abspath("..")]
+source_directories = [os.path.abspath("../west")]
 rst_directory = "."
 
 excluded_modules = ["doc_inherit", "snippets", "doc_inherit2", "custom_logging", "see_profile"]
