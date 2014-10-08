@@ -69,6 +69,19 @@ class DataMap2D(object):
             obj.reset_all_values(matrix)
         return obj
 
+    def get_clean_copy(self, fill_value=numpy.nan):
+        """
+        Returns a new :class:`DataMap2D` object which has the same properties as
+        this one but with the internal matrix filled with ``fill_value``.
+
+        :param fill_value: fill value for the matrix of the new object
+        :return: new object
+        :rtype: :class:`DataMap2D`
+        """
+        clean_copy = self.__class__.get_copy_of(self)
+        clean_copy.reset_all_values(fill_value=fill_value)
+        return clean_copy
+
     def _initialize(self, latitude_bounds, longitude_bounds, num_latitude_divisions, num_longitude_divisions,
                     data_type=float, verbose=True):
         if verbose:
@@ -296,7 +309,7 @@ class DataMap2D(object):
 
     def raise_error_if_datamaps_are_incomparable(self, other_datamap2d):
         """Tests two :class:`DataMap2D` objects for comparability (i.e. are they describing the same points?). Raises a
-        ValueError if they are incomparable.
+        TypeError if they are incomparable.
 
         :param other_datamap2d:
         :type other_datamap2d: :class:`DataMap2D`
@@ -682,7 +695,7 @@ class DataMap3D(object):
         :param other_datamap2d:
         :type other_datamap2d: :class:`DataMap2D`
         """
-        existing_datamap2d = self.get_layer(self._layer_descr_list[0])
+        existing_datamap2d = self.get_arbitrary_layer()
         existing_datamap2d.raise_error_if_datamaps_are_incomparable(other_datamap2d)
 
     def get_layer(self, layer_descr):
@@ -820,10 +833,20 @@ class DataMap3D(object):
         Sets the value of each layer at the specified location. The list is assumed to be ordered according to the
         original `layer_descr_list`.
 
+        If the new value is None, no change is made.
+
         See also: :meth:`set_some_layers_at_index_as_list`, :meth:`get_all_layers_at_index_from_list` \
                     :meth:`get_some_layers_at_index_from_list`
         """
-        self.set_some_layers_at_index_from_list(self._layer_descr_list, latitude_index, longitude_index, list_of_values)
+        modified_layer_descr_list = []
+        modified_value_list = []
+        for layer_descr, new_value in zip(self._layer_descr_list,
+                                          list_of_values):
+            if new_value is not None:
+                modified_layer_descr_list.append(layer_descr)
+                modified_value_list.append(new_value)
+
+        self.set_some_layers_at_index_from_list(modified_layer_descr_list, latitude_index, longitude_index, modified_value_list)
 
     def set_layers_at_index_from_dict(self, latitude_index, longitude_index, dict_of_values):
         """
@@ -833,7 +856,7 @@ class DataMap3D(object):
         See also: :meth:`set_all_layers_at_index_as_list`, :meth:`set_some_layers_at_index_as_list`, \
                     :meth:`get_all_layers_at_index_from_dict`.
         """
-        for (descr, value) in dict_of_values:
+        for (descr, value) in dict_of_values.iteritems():
             layer = self.get_layer(descr)
             if layer is None:
                 self.log.error("Could not set layer '%s': layer was not retrieved." % descr)
@@ -956,3 +979,47 @@ class DataMap3D(object):
 
     def __setstate__(self, d):
         self.__dict__.update(d)
+
+    def get_layer_descr_list(self):
+        return self._layer_descr_list
+
+    def get_arbitrary_layer(self):
+        return self._layers[self._layer_descr_list[0]]
+
+    def raise_error_if_datamaps_are_incomparable(self, other_datamap3d):
+        """Tests two :class:`DataMap3D` objects for comparability (i.e. are
+        they describing the same points and layers?). Raises a TypeError if
+        they are incomparable.
+
+        :param other_datamap3d:
+        :type other_datamap3d: :class:`DataMap3D`
+        """
+        # Check that they have exactly the same layers
+        if not set(self.get_layer_descr_list()) == set(
+                other_datamap3d.get_layer_descr_list()):
+            raise AttributeError("Layers of %r and %r are not equivalent." %
+                                 (self, other_datamap3d))
+
+        # Make sure each layer is comparable
+        for layer_descr in self._layer_descr_list:
+            self._raise_error_if_incomparable_to_internal_datamaps(
+                other_datamap3d.get_layer(layer_descr))
+
+    def get_clean_copy(self, fill_value=numpy.nan):
+        """
+        Returns a new :class:`DataMap3D` object which has the same properties
+        and layers as this one but with the internal matrix filled with
+        ``fill_value``.
+
+        :param fill_value: fill value for the matrix of the new object
+        :return: new object
+        :rtype: :class:`DataMap3D`
+        """
+        existing_datamap2d = self.get_arbitrary_layer()
+        clean_datamap2d = existing_datamap2d.get_clean_copy(
+            fill_value=fill_value)
+
+        clean_copy = self.__class__.from_DataMap2D(clean_datamap2d,
+                                                   self._layer_descr_list)
+
+        return clean_copy
