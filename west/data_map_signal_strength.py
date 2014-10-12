@@ -66,7 +66,8 @@ class DataMap2DSignalStrength(DataMap2D):
         def update_signal_strengths(latitude, longitude, latitude_index,
                                     longitude_index, current_value):
             location = (latitude, longitude)
-            if self.should_skip_pixel(location, current_value):
+            if self.should_skip_pixel(latitude, longitude, latitude_index,
+                                      longitude_index, current_value):
                 return None
 
             for tv_station in list_of_tv_stations:
