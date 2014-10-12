@@ -676,7 +676,7 @@ class RulesetFcc2012(Ruleset):
             if self._low_vhf_lower_frequency_mhz <= freq <= self._low_vhf_upper_frequency_mhz:
                 return 28.0
             elif self._high_vhf_lower_frequency_mhz <= freq <= self._high_vhf_upper_frequency_mhz:
-                return 66.0
+                return 36.0
             elif self._uhf_lower_frequency_mhz <= freq <= self._uhf_upper_frequency_mhz:
                 return 41.0
             else:
