@@ -1,9 +1,8 @@
-from propagation_model import PropagationModel, PropagationCurve
+from propagation_model import PropagationModel, PropagationCurve, InvalidDistanceError
 from configuration import package_directory
 from ctypes import *
 import os.path
 from math import log10
-
 
 
 class PropagationModelFcurves(PropagationModel):
@@ -192,6 +191,7 @@ class PropagationModelFcurves(PropagationModel):
             "A9": "INVALID 'DISTANCE' VALUE FOR SWITCH = 1.",
             "  ": None
         }
+        self._invalid_distance_errors = ["A2"]
 
         self._warning_codes = {
             "A1": "FREE SPACE EQUATION USED TO FIND REQUESTED ARGUMENT.",
@@ -216,6 +216,10 @@ class PropagationModelFcurves(PropagationModel):
 
 
         if flag in self._error_codes:
+            if flag in self._invalid_distance_errors:
+                raise InvalidDistanceError("Invalid distance for propagation "
+                                           "model %r" % self)
+
             error_message = self._error_codes[flag]
 
             if error_message is None:

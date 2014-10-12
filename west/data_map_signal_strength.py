@@ -1,4 +1,5 @@
 from data_map import DataMap2D
+from propagation_model import InvalidDistanceError
 from abc import abstractmethod
 from geopy.distance import vincenty
 
@@ -44,6 +45,13 @@ class DataMap2DSignalStrength(DataMap2D):
             pl_function = lambda *args, **kwargs: pm.get_pathloss_coefficient(*args, curve_enum=PropagationCurve.curve_50_90, **kwargs)
             my_signal_map.add_tv_stations(my_tv_stations, pathloss_function=pl_function)
 
+        .. warning:: the signal strength will not be calculated outside the \
+        station's bounding box in order to save on computations.
+
+        .. warning:: any InvalidDistanceErrors from the propagation model will \
+        be ignored and the signal strength at that location (for that station) \
+        will be zero.
+
         :param list_of_tv_stations: list of \
         :class:`protected_entity_tv_station.ProtectedEntityTvStation` objects
         :param pathloss_function: the pathloss function to be used when \
@@ -80,11 +88,15 @@ class DataMap2DSignalStrength(DataMap2D):
         tv_location = tv_station.get_location()
         distance_km = vincenty(tv_location, location).kilometers
         freq = tv_station.get_center_frequency()
-        pathloss = pathloss_function(distance_km, frequency=freq,
-                                     tx_height=tv_station.get_haat_meters(),
-                                     rx_height=None, tx_location=tv_location,
-                                     rx_location=location)
-        # TODO: account for rx height?
+        try:
+            pathloss = pathloss_function(distance_km, frequency=freq,
+                                         tx_height=tv_station.get_haat_meters(),
+                                         rx_height=None,
+                                         tx_location=tv_location,
+                                         rx_location=location)
+            # TODO: account for rx height?
+        except InvalidDistanceError:
+            return 0
 
         return tv_station.get_erp_watts() * pathloss
 

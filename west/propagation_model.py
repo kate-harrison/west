@@ -1,6 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from custom_logging import getModuleLogger
 
+
+class InvalidDistanceError(ValueError):
+    pass
+
+
 class PropagationCurve(object):
     """
     This class is a poor-man's enum because Python 2 does not support the Enum class.
