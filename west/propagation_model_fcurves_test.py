@@ -1,6 +1,6 @@
 import unittest
 from propagation_model_fcurves import PropagationModelFcurvesWithoutTerrain
-from propagation_model import PropagationCurve
+from propagation_model import PropagationCurve, InvalidDistanceError
 
 
 class UnitConversionTestCase(unittest.TestCase):
@@ -163,7 +163,9 @@ class FcurvesTestCase(unittest.TestCase):
 
         # Distance > 300
         for distance in [301, 400, 500]:
-            with self.assertRaises(ValueError, msg="\n\nFailed for distance = %2.2f km" % distance):
+            with self.assertRaises(InvalidDistanceError,
+                                   msg="\n\nFailed for distance = %2.2f km" %
+                                   distance):
                 self.pm.get_pathloss_coefficient(frequency=207, tx_height=30, curve_enum=curve, distance=distance)
 
         # Unsupported frequencies

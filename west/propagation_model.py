@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from custom_logging import getModuleLogger
 
 
-class InvalidDistanceError(ValueError):
+class InvalidDistanceError(Exception):
     pass
 
 

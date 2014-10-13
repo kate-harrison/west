@@ -1,4 +1,5 @@
-from propagation_model import PropagationModel, PropagationCurve, InvalidDistanceError
+from propagation_model import PropagationModel, PropagationCurve, \
+    InvalidDistanceError
 from configuration import package_directory
 from ctypes import *
 import os.path
@@ -123,7 +124,8 @@ class PropagationModelFcurves(PropagationModel):
             raise ValueError(self._unsupported_frequency_value_string(frequency))
 
         if distance is not None and distance > 300:
-            raise ValueError("Unsupported distance: %.2f (maximum: 300 km)." % distance)
+            raise InvalidDistanceError("Unsupported distance: %.2f (maximum: "
+                                       "300 km)." % distance)
 
 ####
 #   LIBRARY FUNCTIONS
@@ -213,7 +215,6 @@ class PropagationModelFcurves(PropagationModel):
 
         if flag not in self._error_codes and flag not in self._warning_codes:
             raise KeyError("Unknown flag returned: '%s'" % flag)
-
 
         if flag in self._error_codes:
             if flag in self._invalid_distance_errors:
