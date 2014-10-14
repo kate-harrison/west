@@ -131,7 +131,7 @@ class BoundaryShapefile(Boundary):
     def add_to_kml(self, kml):
         added_polys = []
         for (lats, lons) in self.get_sets_of_exterior_coordinates():
-            coords = zip(lats, lons)
+            coords = zip(lons, lats)
             coords.append(coords[0])    # close the polygon
 
             poly = kml.newpolygon()
