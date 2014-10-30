@@ -135,7 +135,7 @@ class BoundaryShapefile(Boundary):
             coords.append(coords[0])    # close the polygon
 
             poly = kml.newpolygon()
-            poly.outerboundaryis.coords = coords
+            poly.outerboundaryis.coords = reversed(coords)
             added_polys.append(poly)
 
         return added_polys
