@@ -23,7 +23,10 @@ github page:
 >      url={https://github.com/kate-harrison/west}
 >     }
 
-Please also make sure you read and abide by the terms of the license.
+Please also make sure you read and abide by the terms of the license (GPLv2).
+If the terms of the license are not suitable for your application,
+please contact me: I may be willing to release under a more permissive 
+license if necessary.
 
 
 Want to contribute?
