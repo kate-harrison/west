@@ -2,8 +2,9 @@ Whitespace Evaluation SofTware (WEST)
 -------------------------------------
 
 WEST is a tool which makes it easy to evaluate
-[whitespace](http://en.wikipedia.org/wiki/White_spaces_(radio\)) opportunities
-with different regulatory sets and for wide variety of geographies. 
+[whitespace](http://en.wikipedia.org/wiki/White_spaces_%28radio%29) 
+opportunities with different regulatory sets and for wide variety of 
+geographies. 
 
 See below for an overview of the module's structure and instructions for 
 getting started.
