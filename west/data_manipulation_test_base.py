@@ -1,5 +1,4 @@
 from data_manipulation import calculate_cdf_from_matrices
-# import data_map
 import numpy
 import unittest
 
@@ -46,9 +45,3 @@ class AbstractCDFTestCase(unittest.TestCase):
         if hasattr(self, "expected_cdfy"):
             expected_cdfy_array = numpy.matrix(self.expected_cdfy).A1
             self.assertTrue(numpy.allclose(self.cdfY, expected_cdfy_array))
-
-
-
-# class AbstractMapCDFTestCase(unittest.TestCase):
-#
-#

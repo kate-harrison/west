@@ -46,9 +46,9 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
         self.stations_by_channel = {}
         self.stations_by_DA = {'analog': [], 'digital': []}
 
-        # Pre-allocate the channels so that an empty list is returned even if there
-        # are no stations on that channel. Stations which have a channel not in the
-        # list will not be added.
+        # Pre-allocate the channels so that an empty list is returned even if
+        # there are no stations on that channel. Stations which have a
+        # channel not in the list will not be added.
         for channel_number in self.region.get_channel_list():
             self.stations_by_channel[channel_number] = []
 
@@ -58,7 +58,8 @@ class ProtectedEntitiesTVStations(ProtectedEntities):
             is_digital = station.is_digital()
 
             if channel not in self.stations_by_channel:
-                self.log.warning("Detected a station on an unsupported channel: %d" % channel)
+                self.log.warning("Detected a station on an unsupported "
+                                 "channel: %d" % channel)
             else:
                 self.stations_by_channel[channel].append(station)
 
@@ -112,7 +113,9 @@ class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
 
     def get_max_protected_radius_km(self):
         """
-        See :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km` for more details.
+        See
+        :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`
+        for more details.
 
         :return: 200.0
         :rtype: float
@@ -120,14 +123,19 @@ class ProtectedEntitiesTVStationsUnitedStates(ProtectedEntitiesTVStations):
         return 200.0
 
 
-class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(ProtectedEntitiesTVStationsUnitedStates):
-    """This class contains TV stations read from the FCC's Baseline file for the incentive auctions. The file can be
-    found at http://data.fcc.gov/download/incentive-auctions/Constraint_Files/ (specifically at
-    http://data.fcc.gov/download/incentive-auctions/Constraint_Files/US_Station_Baseline_2014May20.xlsx).
+class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(
+    ProtectedEntitiesTVStationsUnitedStates):
+    """This class contains TV stations read from the FCC's Baseline file for
+    the incentive auctions. The file can be found at
+    http://data.fcc.gov/download/incentive-auctions/Constraint_Files/
+    (specifically at
+    http://data.fcc.gov/download/incentive-auctions/Constraint_Files/US_Station_Baseline_2014May20.xlsx
+    ).
     """
     def source_filename(self):
         base_directory = configuration.paths['UnitedStates']['protected_entities']
-        return os.path.join(base_directory, 'us_station_baseline_2014may20 - US Stations.csv')
+        return os.path.join(base_directory,
+                            'us_station_baseline_2014may20 - US Stations.csv')
 
     def source_name(self):
         return "US Station Incentive Auction Baseline May 20, 2014 " + \
@@ -135,13 +143,14 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(P
 
     def _load_entities(self):
         """
-        Column headers + example data (copied from spreadsheet)
-        More information about the columns is available in the original .xlsx file.
+        Column headers + example data (copied from spreadsheet). More
+        information about the columns is available in the original .xlsx file.
 
         channel	service	country	state	city	lat	lon	fac_callsign	arn	app_id	haat	da	erp	facility_id	rcamsl	ref az	ant_id
         5	DT	US	AK	ANCHORAGE	612011	1493047	KYES-TV	BLCDT20110307ACV	1565982	277	DA	15	21488	614.5	0	93311
         """
-        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(
+            self.source_filename()), str(self.source_name())))
 
         def convert_dms_to_decimal(degrees, minutes, seconds):
             return degrees + minutes/60 + seconds/3600
@@ -152,7 +161,8 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(P
                 tx_type = station['service']
 
                 if tx_type in self.ignored_tv_types():
-                    self.log.debug("Skipping TV station because its type is ignored: %s" % tx_type)
+                    self.log.debug("Skipping TV station because its type is "
+                                   "ignored: %s" % tx_type)
                     continue
 
                 try:
@@ -167,18 +177,24 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(P
                     lon_sec = float(lon_string[-2:])
                     lon_min = float(lon_string[-4:-2])
                     lon_deg = float(lon_string[:-4])
-                    longitude = convert_dms_to_decimal(lon_deg, lon_min, lon_sec) * -1
+                    longitude = convert_dms_to_decimal(lon_deg, lon_min,
+                                                       lon_sec) * -1
 
                     channel = int(station['channel'])
-                    ERP = float(station['erp'])     # in kW
-                    haat = float(station['haat'])   # in meters
+                    ERP = float(station['erp'])  # in kW
+                    haat = float(station['haat'])  # in meters
                 except Exception as e:
                     self.log.error("Error loading station: ", str(e))
                     continue
 
-                new_station = ProtectedEntityTVStation(self, self.get_mutable_region(), latitude=latitude,
-                                                       longitude=longitude, channel=channel, ERP_Watts=ERP,
-                                                       HAAT_meters=haat, tx_type=tx_type)
+                new_station = ProtectedEntityTVStation(self,
+                                                       self.get_mutable_region(),
+                                                       latitude=latitude,
+                                                       longitude=longitude,
+                                                       channel=channel,
+                                                       ERP_Watts=ERP,
+                                                       HAAT_meters=haat,
+                                                       tx_type=tx_type)
 
                 # Add optional information
                 new_station.add_facility_id(station['facility_id'])
@@ -188,9 +204,10 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(P
                 self._add_entity(new_station)
 
 
-class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStationsUnitedStates):
-    """This class contains TV stations as read from the TV Query website. Subclasses will contain data from a particular
-    date.
+class ProtectedEntitiesTVStationsUnitedStatesTVQuery(
+    ProtectedEntitiesTVStationsUnitedStates):
+    """This class contains TV stations as read from the TV Query website.
+    Subclasses will contain data from a particular date.
 
     TVQuery: http://www.fcc.gov/encyclopedia/tv-query-broadcast-station-search
     Key: http://transition.fcc.gov/mb/audio/am_fm_tv_textlist_key.txt
@@ -208,7 +225,8 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
 
         Key: http://transition.fcc.gov/mb/audio/am_fm_tv_textlist_key.txt
         """
-        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(
+            self.source_filename()), str(self.source_name())))
 
         column_number = dict()
         column_number['callsign'] = 1
@@ -248,13 +266,15 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                         continue
 
                     # Skip stations which are not in the US
-                    if str.strip(station_row[column_number['country']]) in ["CA", "MX"]:
+                    if str.strip(station_row[column_number['country']]) in [
+                        "CA", "MX"]:
                         continue
 
                     tx_type = str.strip(station_row[column_number['tx_type']])
 
                     # The second list holds types which designate petitions
-                    if tx_type in self.ignored_tv_types() or tx_type in ['DM', 'DR', 'DN']:
+                    if tx_type in self.ignored_tv_types() or tx_type in [
+                        'DM', 'DR', 'DN']:
                         continue
 
                     channel = int(station_row[column_number['channel']])
@@ -273,7 +293,8 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     # (http://www.fcc.gov/encyclopedia/white-space-database-administration-q-page) mentions visual peak
                     # power and visual average power; however, these values are not present in the TV Query data.
                     if ERP_Watts < 0.001:
-                        self.log.warning("Skipping station with 0 kW ERP; callsign: '%s'" % callsign)
+                        self.log.warning("Skipping station with 0 kW ERP; "
+                                         "callsign: '%s'" % callsign)
                         continue
 
                     # Convert latitude
@@ -286,11 +307,15 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     elif lat_dir in ['s', 'S']:
                         lat_sign = -1
                     else:
-                        self.log.error("Could not determine station latitude (direction: %s); skipping station with callsign %s" %
+                        self.log.error("Could not determine station latitude "
+                                       "(direction: %s); skipping station "
+                                       "with callsign %s" %
                                        (lat_dir, callsign))
                         print station_row
                         continue
-                    latitude = lat_sign * convert_dms_to_decimal(lat_deg, lat_min, lat_sec)
+                    latitude = lat_sign * convert_dms_to_decimal(lat_deg,
+                                                                 lat_min,
+                                                                 lat_sec)
 
                     # Convert longitude
                     lon_dir = str.strip(station_row[column_number['lon_dir']])
@@ -302,11 +327,16 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     elif lon_dir in ['w', 'W']:
                         lon_sign = -1
                     else:
-                        self.log.error("Could not determine station longitude (direction: %s); skipping station with callsign %s" %
-                                       (lon_dir, callsign))
+                        self.log.error(
+                            "Could not determine station longitude ("
+                            "direction: %s); skipping station with callsign "
+                            "%s" % (
+                            lon_dir, callsign))
                         print station_row
                         continue
-                    longitude = lon_sign * convert_dms_to_decimal(lon_deg, lon_min, lon_sec)
+                    longitude = lon_sign * convert_dms_to_decimal(lon_deg,
+                                                                  lon_min,
+                                                                  lon_sec)
 
                     HAAT_meters = float(station_row[column_number['HAAT']])
                 except Exception as e:
@@ -314,36 +344,48 @@ class ProtectedEntitiesTVStationsUnitedStatesTVQuery(ProtectedEntitiesTVStations
                     continue
 
                 # Create the station
-                new_station = ProtectedEntityTVStation(self, self.get_mutable_region(), latitude=latitude,
-                                                       longitude=longitude, channel=channel, ERP_Watts=ERP_Watts,
-                                                       HAAT_meters=HAAT_meters, tx_type=tx_type)
+                new_station = ProtectedEntityTVStation(self,
+                                                       self.get_mutable_region(),
+                                                       latitude=latitude,
+                                                       longitude=longitude,
+                                                       channel=channel,
+                                                       ERP_Watts=ERP_Watts,
+                                                       HAAT_meters=HAAT_meters,
+                                                       tx_type=tx_type)
 
                 # Add optional information
-                new_station.add_facility_id(station_row[column_number['facility_id']].strip())
+                new_station.add_facility_id(
+                    station_row[column_number['facility_id']].strip())
                 new_station.add_callsign(callsign)
 
-                new_station.add_app_id(station_row[column_number['app_id']].strip())
+                new_station.add_app_id(
+                    station_row[column_number['app_id']].strip())
 
                 # Add it to the internal list
                 self._add_entity(new_station)
 
 
-class ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(ProtectedEntitiesTVStationsUnitedStatesTVQuery):
+class ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(
+    ProtectedEntitiesTVStationsUnitedStatesTVQuery):
     """TV Query data from June 17, 2014."""
 
     def source_filename(self):
-        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        base_directory = \
+            configuration.paths['UnitedStates']['protected_entities']
         return os.path.join(base_directory, '2014-06-17 tvq.txt')
 
     def source_name(self):
-        return "TVQuery download on June 17, 2014 [http://www.fcc.gov/encyclopedia/tv-query-broadcast-station-search]"
+        return "TVQuery download on June 17, 2014 " + \
+                "[http://www.fcc.gov/encyclopedia/tv-query-broadcast-station-search]"
 
 
-class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStationsUnitedStates):
+class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(
+    ProtectedEntitiesTVStationsUnitedStates):
     """This class contains TV stations as read from the Google data."""
 
     def source_filename(self):
-        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        base_directory = \
+            configuration.paths['UnitedStates']['protected_entities']
         return os.path.join(base_directory, 'FromGoogle', 'tv_us.csv')
 
     def source_name(self):
@@ -365,7 +407,8 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
         'parent_callsign': ''}
         """
 
-        self.log.debug("Loading TV stations from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading TV stations from \"%s\" (%s)" % (
+        str(self.source_filename()), str(self.source_name())))
 
         with open(self.source_filename(), 'r') as f:
             station_csv = csv.DictReader(f)
@@ -386,9 +429,14 @@ class ProtectedEntitiesTVStationsUnitedStatesFromGoogle(ProtectedEntitiesTVStati
                     self.log.error("Error loading station: ", str(e))
                     continue
 
-                new_station = ProtectedEntityTVStation(self, self.get_mutable_region(), latitude=latitude,
-                                                       longitude=longitude, channel=channel, ERP_Watts=ERP,
-                                                       HAAT_meters=haat, tx_type=tx_type)
+                new_station = ProtectedEntityTVStation(self,
+                                                       self.get_mutable_region(),
+                                                       latitude=latitude,
+                                                       longitude=longitude,
+                                                       channel=channel,
+                                                       ERP_Watts=ERP,
+                                                       HAAT_meters=haat,
+                                                       tx_type=tx_type)
 
                 # Add optional information
                 new_station.add_facility_id(station['facility_id'])

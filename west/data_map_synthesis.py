@@ -5,8 +5,8 @@ import numpy
 def _raise_error_if_not_correct_type(obj, expected_type):
     """Raises a TypeError if ``obj`` is not of the ``expected_type``."""
     if not isinstance(obj, expected_type):
-        raise TypeError("Expected %r to be of type %r but got %r." % (obj,
-                                                                      expected_type, obj.__class__))
+        raise TypeError("Expected %r to be of type %r but got %r."
+                        % (obj, expected_type, obj.__class__))
 
 
 def _raise_error_if_bad_input(tuple_of_datamaps, expected_type):
@@ -24,7 +24,8 @@ def _raise_error_if_bad_input(tuple_of_datamaps, expected_type):
     arbitrary_datamap = tuple_of_datamaps[0]
     for input_datamap in tuple_of_datamaps:
         _raise_error_if_not_correct_type(input_datamap, expected_type)
-        arbitrary_datamap.raise_error_if_datamaps_are_incomparable(input_datamap)
+        arbitrary_datamap.raise_error_if_datamaps_are_incomparable(
+            input_datamap)
 
 
 def synthesize_pixels(combination_function, tuple_of_datamap2ds):

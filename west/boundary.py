@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from os import path
 from custom_logging import getModuleLogger
-# from geopy.distance import vincenty
 from shapely.geometry import Point, shape
 import shapely
 import fiona
@@ -19,7 +18,6 @@ class Boundary(object):
 
         self._geometries = []
 
-
     @abstractmethod
     def boundary_filename(self):
         """
@@ -27,7 +25,6 @@ class Boundary(object):
         :rtype: string
         """
         return
-
 
     def location_inside_boundary(self, location):
         """
@@ -77,7 +74,6 @@ class Boundary(object):
         return
 
 
-
 class BoundaryShapefile(Boundary):
     """
     :class:`Boundary` class specifically designed for use with ESRI shapefiles. Simply give the \*.shp
@@ -87,7 +83,6 @@ class BoundaryShapefile(Boundary):
     def __init__(self, *args, **kwargs):
         super(BoundaryShapefile, self).__init__(*args, **kwargs)
         self._read_shapefile()
-
 
     def _read_shapefile(self):
         """
@@ -151,7 +146,6 @@ class BoundaryShapefile(Boundary):
         """
         return []
 
-
     @abstractmethod
     def _geometry_name_field_str(self):
         """
@@ -185,7 +179,6 @@ class BoundaryShapefile(Boundary):
                 properties[name_field] not in omitted_shapes]
 
 
-
 class BoundaryContinentalUnitedStatesWithStateBoundaries(BoundaryShapefile):
     """
     :class:`Boundary` describing the continental United States.
@@ -217,7 +210,6 @@ class BoundaryUnitedStates(BoundaryShapefile):
         return "NAME"
 
 
-
 class BoundaryContinentalUnitedStates(BoundaryUnitedStates):
     """
     This class is identical to :class:`BoundaryUnitedStates` but it excludes any polygons outside
@@ -236,7 +228,7 @@ class BoundaryContinentalUnitedStates(BoundaryUnitedStates):
 
     def __init__(self, *args, **kwargs):
         super(BoundaryContinentalUnitedStates, self).__init__(*args, **kwargs)
-        # self._remove_non_continental_parts()      # TODO: add this back in someday
+        # self._remove_non_continental_parts()      # TODO: add this back in
 
     # def _remove_non_continental_parts(self):
     #     # def filter_function(part):

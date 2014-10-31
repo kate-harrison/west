@@ -10,9 +10,10 @@ class PropagationModelFcurves(PropagationModel):
     """The FCC's F-curves model.
 
     This model uses the FCC's Fortran code which can be downloaded from
-    http://www.fcc.gov/mb/audio/bickel/archive/fmtvcurves.zip. Some modifications were made in order to compile the code.
-    However, functionality should not be changed by these modifications. See below for a list of them. To learn more
-    about the F-curves, see the following:
+    http://www.fcc.gov/mb/audio/bickel/archive/fmtvcurves.zip. Some
+    modifications were made in order to compile the code. However,
+    functionality should not be changed by these modifications. See below for a
+    list of them. To learn more about the F-curves, see the following:
 
       * http://transition.fcc.gov/Bureaus/Mass_Media/Databases/documents_collection/rptRS76-01.pdf
       * http://transition.fcc.gov/oet/info/documents/reports/R-6602.pdf
@@ -39,32 +40,39 @@ class PropagationModelFcurves(PropagationModel):
              * 470 - 890 MHz (US UHF: channels 14-84)
 
          * A ValueError is raised if using an unsupported frequency.
-         * There are no actual code-based limitations on these frequencies, only model-imposed limitations (i.e. the
-            F-curves were not designed for frequencies outside these ranges). Modification, although undefined, would
-            require only a small change in the Python code.
+         * There are no actual code-based limitations on these frequencies,
+           only model-imposed limitations (i.e. the F-curves were not
+           designed for frequencies outside these ranges). Modification,
+           although undefined, would require only a small change in the
+           Python code.
 
-      * The default output of the F-curve library is dBu. This is converted to a pathloss coefficient in this class.
+      * The default output of the F-curve library is dBu. This is converted
+        to a pathloss coefficient in this class.
 
     **Modifications to Fortran code:**
-      * The Fortran code was written using linear indexing into a 2-D array. This is not supported in later versions of
-        Fortran and thus the code must be modified before it will run without producing a segmentation fault. In
-        particular, the subroutine ITPLBV (which performs bivariate interpolation) must be updated via the following
-        steps:
+      * The Fortran code was written using linear indexing into a 2-D array.
+        This is not supported in later versions of Fortran and thus the code
+        must be modified before it will run without producing a segmentation
+        fault. In particular, the subroutine ITPLBV (which performs bivariate
+        interpolation) must be updated via the following steps:
 
          * Download the original Fortran code
-         * Replace the ITPLBV subroutine in curves_subroutines.f with the one found in itplbv_updated.f
+         * Replace the ITPLBV subroutine in curves_subroutines.f with the one
+           found in itplbv_updated.f
 
-            * Note that the updated code contains a commented version of the original code (as of this writing) for
-              reference.
+            * Note that the updated code contains a commented version of the
+              original code (as of this writing) for reference.
 
          * Thanks goes to the commenters at
            http://compgroups.net/comp.lang.fortran/passing-c++-array-to-fortran-function/594289
 
-      * There also appears to be an error with the size of some arrays which produces a Fortran compiler warning. It
-        appears to be safe to ignore these warnings but to fix them, do the following:
+      * There also appears to be an error with the size of some arrays which
+        produces a Fortran compiler warning. It appears to be safe to ignore
+        these warnings but to fix them, do the following:
 
          * Navigate to the subroutine `f5090` in curves_subroutines.f
-         * Replace the number 201 with the number 1000 for the following variables:
+         * Replace the number 201 with the number 1000 for the following
+           variables:
 
             * fs
             * d
@@ -90,19 +98,26 @@ class PropagationModelFcurves(PropagationModel):
         self._initialize_fcurve_library_and_function()
         self._initialize_error_codes()
 
-    # The F-curve results for frequencies within a given range (e.g. high VHF) will be identical. However, the F-curve
-    # program requires input in terms of channel number. Here, we define each range and its corresponding proxy channel
-    # number. The actual proxy channel number does not change the results as long as it is within the range (e.g. 7-13).
-    #
-    # A similar process can be seen in lines 368 - 388 of curves.f. curves.f provides a human interface (command-line
-    # prompt) to curves_subroutines.f contains the actual computations.
-    #
-    # Source for frequencies: http://en.wikipedia.org/wiki/North_American_television_frequencies#Channel_frequencies
-    #
-    # Note however that the frequency input to the pathloss model *does* matter in that it will change the results of
-    # the dBu -> dBm conversion that happens after the F-curves calculation. It is assumed that the channel's center
-    # frequency is provided.
-    #
+    """
+    The F-curve results for frequencies within a given range (e.g. high VHF)
+    will be identical. However, the F-curve program requires input in terms
+    of channel number. Here, we define each range and its corresponding proxy
+    channel number. The actual proxy channel number does not change the
+    results as long as it is within the range (e.g. 7-13).
+
+    A similar process can be seen in lines 368 - 388 of curves.f. curves.f
+    provides a human interface (command-line prompt) to curves_subroutines.f
+    contains the actual computations.
+
+    Source for frequencies:
+    http://en.wikipedia.org/wiki/North_American_television_frequencies#Channel_frequencies
+
+    Note however that the frequency input to the pathloss model *does* matter in
+    that it will change the results of the dBu -> dBm conversion that happens
+    after the F-curves calculation. It is assumed that the channel's center
+    frequency is provided.
+    """
+
     # Change these variables only at your own risk.
     _low_vhf_lower_frequency_mhz = 54   # US channel 2 (lower edge)
     _low_vhf_upper_frequency_mhz = 88   # US channel 6 (upper edge)
@@ -112,16 +127,22 @@ class PropagationModelFcurves(PropagationModel):
     _high_vhf_upper_frequency_mhz = 216  # US channel 13 (upper edge)
     _high_vhf_proxy_channel = 9
 
-    _uhf_lower_frequency_mhz = 470      # US channel 14 (lower edge)
-    _uhf_upper_frequency_mhz = 890      # US channel 83 (upper edge)
+    _uhf_lower_frequency_mhz = 470  # US channel 14 (lower edge)
+    _uhf_upper_frequency_mhz = 890  # US channel 83 (upper edge)
     _uhf_proxy_channel = 20
 
-    def _raise_error_if_input_invalid(self, frequency, tx_height, rx_height, tx_location, rx_location, curve_enum,
+    def _raise_error_if_input_invalid(self, frequency, tx_height, rx_height,
+                                      tx_location, rx_location, curve_enum,
                                       distance=None, pathloss_coefficient=None):
-        if (not (self._low_vhf_lower_frequency_mhz <= frequency <= self._low_vhf_upper_frequency_mhz)
-                and not (self._high_vhf_lower_frequency_mhz <= frequency <= self._high_vhf_upper_frequency_mhz)
-                and not (self._uhf_lower_frequency_mhz <= frequency <= self._uhf_upper_frequency_mhz)):
-            raise ValueError(self._unsupported_frequency_value_string(frequency))
+        if (not (
+                self._low_vhf_lower_frequency_mhz <= frequency <=
+                    self._low_vhf_upper_frequency_mhz) and not (
+                self._high_vhf_lower_frequency_mhz <= frequency <=
+                    self._high_vhf_upper_frequency_mhz) and not (
+                self._uhf_lower_frequency_mhz <= frequency <=
+                    self._uhf_upper_frequency_mhz)):
+            raise ValueError(
+                self._unsupported_frequency_value_string(frequency))
 
         if distance is not None and distance > 300:
             raise InvalidDistanceError("Unsupported distance: %.2f (maximum: "
@@ -131,7 +152,9 @@ class PropagationModelFcurves(PropagationModel):
 #   LIBRARY FUNCTIONS
 ####
     def _initialize_fcurve_library_and_function(self):
-        shared_object_path = os.path.join(package_directory, "propagation_models", "fcurves", "curves_subroutines.so")
+        shared_object_path = os.path.join(package_directory,
+                                          "propagation_models", "fcurves",
+                                          "curves_subroutines.so")
         cdll.LoadLibrary(shared_object_path)
         fcurves_lib = CDLL(shared_object_path)
         self._initialize_library_functions(fcurves_lib)
@@ -177,13 +200,12 @@ class PropagationModelFcurves(PropagationModel):
 ####
     def _initialize_error_codes(self):
         """
-        The library sets various flag values depending on the error (if any). Original error/warning code definitions
-        can be found on lines 1918 - 1939 of fcurves_subroutines.f.
+        The library sets various flag values depending on the error (if any).
+        Original error/warning code definitions can be found on lines 1918-1939
+        of fcurves_subroutines.f.
 
         :return: None
         """
-
-        # Original error/warning code definitions can be found on lines 1918 - 1939 of fcurves_subroutines.f
         self._error_codes = {
             "A2": "DISTANCE EXCEEDS GREATEST VALUE ON CURVES.",
             "A3": "INVALID CHANNEL NUMBER.",
@@ -204,8 +226,10 @@ class PropagationModelFcurves(PropagationModel):
 
     def _raise_warning_or_error_if_flag_set(self, flag):
         """
-        Checks the flag for any of the error codes defined in :meth:`_initialize_error_codes` and raises an Exception or
-        Warning depending on the type of flag. If the flag indicates success, no Exception or Warning is raised.
+        Checks the flag for any of the error codes defined in
+        :meth:`_initialize_error_codes` and raises an Exception or Warning
+        depending on the type of flag. If the flag indicates success,
+        no Exception or Warning is raised.
 
         :param flag: two-character flag from the F-curve library
         :type flag: c_byte * 2
@@ -232,8 +256,7 @@ class PropagationModelFcurves(PropagationModel):
             if warning_message is None:
                 return
             else:
-                #raise Warning("F-curve warning: %s" % warning_message)
-                # self.log.warn("F-curve warning: %s" % warning_message)  # TODO: should this be a real warning?
+                # TODO: raise warning?
                 pass
 
     def _flag_to_string(self, flag):
@@ -255,23 +278,27 @@ class PropagationModelFcurves(PropagationModel):
 ####
     def _unsupported_frequency_value_string(self, frequency):
         """
-        Generates a string to be used if an unsupported frequency has been encountered. This string includes the
-        supported frequency ranges to assist the user.
+        Generates a string to be used if an unsupported frequency has been
+        encountered. This string includes the supported frequency ranges to
+        assist the user.
 
         :param frequency: unsupported frequency
         :type frequency: float or integer
         :return:
         :rtype: string
         """
-        return "Unsupported frequency: %2.2f. Valid ranges are: [%.1f, %.1f], [%.1f, %.1f], and [%.1f, %.1f] MHz." % \
-            (frequency,
-             self._low_vhf_lower_frequency_mhz, self._low_vhf_upper_frequency_mhz,
-             self._high_vhf_lower_frequency_mhz, self._high_vhf_upper_frequency_mhz,
-             self._uhf_lower_frequency_mhz, self._uhf_upper_frequency_mhz)
+        return "Unsupported frequency: %2.2f. Valid ranges are: " \
+               "[%.1f, %.1f], [%.1f, %.1f], and [%.1f, %.1f] MHz." % \
+               (frequency,
+                self._low_vhf_lower_frequency_mhz,
+                self._low_vhf_upper_frequency_mhz,
+                self._high_vhf_lower_frequency_mhz, self._high_vhf_upper_frequency_mhz,
+                self._uhf_lower_frequency_mhz, self._uhf_upper_frequency_mhz)
 
     def _get_proxy_channel_number(self, frequency):
         """
-        Converts the frequency into a proxy channel (see comments above explaining the use of proxy channels).
+        Converts the frequency into a proxy channel (see comments above
+        explaining the use of proxy channels).
 
         Raises a ValueError if the frequency is unsupported.
 
@@ -291,8 +318,8 @@ class PropagationModelFcurves(PropagationModel):
 
     def dBu_to_dBm(self, dBu, frequency):
         """
-        Converts dBu to dBm
-        based on http://transition.fcc.gov/Bureaus/Engineering_Technology/Documents/bulletins/oet69/oet69.pdf
+        Converts dBu to dBm based on
+        http://transition.fcc.gov/Bureaus/Engineering_Technology/Documents/bulletins/oet69/oet69.pdf
 
         :param dBu:
         :param frequency: center frequency of the band
@@ -330,7 +357,8 @@ class PropagationModelFcurves(PropagationModel):
 
     def Watts_to_dBu(self, watts, frequency):
         """
-        Unit conversion from Watts to dBu. See :meth:`dBm_to_dBu` for any important disclaimers.
+        Unit conversion from Watts to dBu. See :meth:`dBm_to_dBu` for any
+        important disclaimers.
 
         :param watts:
         :param frequency:
@@ -341,7 +369,8 @@ class PropagationModelFcurves(PropagationModel):
 
     def dBu_to_Watts(self, dBu, frequency):
         """
-        Unit conversion from dBu to Watts. See :meth:`dBu_to_dBm` for any important disclaimers.
+        Unit conversion from dBu to Watts. See :meth:`dBu_to_dBm` for any
+        important disclaimers.
 
         :param dBu:
         :param frequency:
@@ -353,15 +382,14 @@ class PropagationModelFcurves(PropagationModel):
 
     def dBm_to_dBu(self, dBm, frequency):
         """
-        Converts dBm to dBu
-        based on http://transition.fcc.gov/Bureaus/Engineering_Technology/Documents/bulletins/oet69/oet69.pdf
+        Converts dBm to dBu based on
+        http://transition.fcc.gov/Bureaus/Engineering_Technology/Documents/bulletins/oet69/oet69.pdf
 
         :param dBm:
         :param frequency: center frequency of the band
         :return: the value in dBu
         :rtype: float
         """
-        # Source: http://transition.fcc.gov/Bureaus/Engineering_Technology/Documents/bulletins/oet69/oet69.pdf
         if self._low_vhf_lower_frequency_mhz <= frequency <= self._low_vhf_upper_frequency_mhz:
             return dBm + 111.8
         elif self._high_vhf_lower_frequency_mhz <= frequency <= self._high_vhf_upper_frequency_mhz:
@@ -385,9 +413,14 @@ class PropagationModelFcurves(PropagationModel):
         elif curve_enum == PropagationCurve.curve_50_90:
             return 2
         else:
-            raise ValueError("No curve associated with '%s'. Please see the PropagationCurve class for options." % str(curve_enum))
+            raise ValueError("No curve associated with '%s'. Please see the "
+                             "PropagationCurve class for options." \
+                             % str(curve_enum))
 
-    def get_pathloss_coefficient_unchecked(self, distance, frequency=None, tx_height=None, rx_height=None, tx_location=None, rx_location=None, curve_enum=None):
+    def get_pathloss_coefficient_unchecked(self, distance, frequency=None,
+                                           tx_height=None, rx_height=None,
+                                           tx_location=None,
+                                           rx_location=None, curve_enum=None):
         erp = c_float(1e-3)     # 1 W (.001 kW)         DO NOT CHANGE
         haat = c_float(self._get_haat(tx_height, tx_location, rx_location))   # meters
         channel = c_long(self._get_proxy_channel_number(frequency))
@@ -398,30 +431,38 @@ class PropagationModelFcurves(PropagationModel):
 
         field_strength_dbu = c_float(-1)   # this will hold the output
         flag = (c_byte*2)(ord(' '), ord(' '))     # error code ("  " is a normal return)
-        # Note that _f5090 will *not* reset the flag upon success so it must be initialized to "  "
+        # Note that _f5090 will *not* reset the flag upon success so it must
+        # be initialized to "  "
 
         # Call the appropriate function in the f-curves library
-        if curve_enum in [PropagationCurve.curve_50_50, PropagationCurve.curve_50_10]:
-            self._tvfmfs_metric(byref(erp), byref(haat), byref(channel), byref(field_strength_dbu), byref(distance),
-                        byref(switch), byref(curve), byref(flag), 2)
+        if curve_enum in [PropagationCurve.curve_50_50,
+                          PropagationCurve.curve_50_10]:
+            self._tvfmfs_metric(byref(erp), byref(haat), byref(channel),
+                                byref(field_strength_dbu), byref(distance),
+                                byref(switch), byref(curve), byref(flag), 2)
         elif curve_enum in [PropagationCurve.curve_50_90, ]:
-            self._f5090(byref(erp), byref(haat), byref(channel), byref(field_strength_dbu), byref(distance),
+            self._f5090(byref(erp), byref(haat), byref(channel),
+                        byref(field_strength_dbu), byref(distance),
                         byref(switch), byref(flag), 2)
         else:
-            raise ValueError("No curve associated with %d. Please see the PropagationCurve class for options." % curve_enum)
+            raise ValueError("No curve associated with %d. Please see the "
+                             "PropagationCurve class for options." % curve_enum)
 
         # Check for warnings from the library
         self._raise_warning_or_error_if_flag_set(flag)
 
-        # Since our input value was 1 Watt, this will actually be the pathloss coefficient
+        # Since our input value was 1 Watt, this will actually be the
+        # pathloss coefficient
         return self.dBu_to_Watts(field_strength_dbu.value, frequency)
 
-    def get_distance_unchecked(self, pathloss_coefficient, frequency=None, tx_height=None, rx_height=None,
+    def get_distance_unchecked(self, pathloss_coefficient, frequency=None,
+                               tx_height=None, rx_height=None,
                                tx_location=None, rx_location=None, curve_enum=None):
         erp = c_float(1e-3)     # 1 W (.001 kW)     DO NOT CHANGE
         haat = c_float(self._get_haat(tx_height, tx_location, rx_location))   # meters
 
-        # Since the input ERP is 1 W, we can use the pathloss coefficient directly
+        # Since the input ERP is 1 W, we can use the pathloss coefficient
+        # directly
         pathloss_dBu = self.Watts_to_dBu(pathloss_coefficient, frequency)
         field_strength_dbu = c_float(pathloss_dBu)
         channel = c_long(self._get_proxy_channel_number(frequency))
@@ -431,18 +472,21 @@ class PropagationModelFcurves(PropagationModel):
 
         distance = c_float(100)        # km    # this will hold the output
         flag = (c_byte*2)(ord(' '), ord(' '))     # error code ("  " is a normal return)
-        # Note that _f5090 will *not* reset the flag upon success so it must be initialized to "  "
+        # Note that _f5090 will *not* reset the flag upon success so it must
+        # be initialized to "  "
 
         # Call the appropriate function in the f-curves library
         if curve_enum in [PropagationCurve.curve_50_50, PropagationCurve.curve_50_10]:
-            self._tvfmfs_metric(byref(erp), byref(haat), byref(channel), byref(field_strength_dbu), byref(distance),
+            self._tvfmfs_metric(byref(erp), byref(haat), byref(channel),
+                                byref(field_strength_dbu), byref(distance),
                                 byref(switch), byref(curve), byref(flag), 2)
         elif curve_enum in [PropagationCurve.curve_50_90, ]:
-            self._f5090(byref(erp), byref(haat), byref(channel), byref(field_strength_dbu), byref(distance),
+            self._f5090(byref(erp), byref(haat), byref(channel),
+                        byref(field_strength_dbu), byref(distance),
                         byref(switch), byref(flag), 2)
         else:
-            raise ValueError("No curve associated with %d. Please see the PropagationCurve class for options." \
-                             % curve_enum)
+            raise ValueError("No curve associated with %d. Please see the "
+                             "PropagationCurve class for options." % curve_enum)
 
         # Check for warnings from the library
         self._raise_warning_or_error_if_flag_set(flag)
@@ -483,12 +527,11 @@ class PropagationModelFcurves(PropagationModel):
 
 
 
-
-
 class PropagationModelFcurvesWithoutTerrain(PropagationModelFcurves):
     """
-    Identical to :meth:`PropagationModelFcurves` except the transmitter and receiver locations are not required (i.e.
-    the provided transmitter HAAT is used without modification).
+    Identical to :meth:`PropagationModelFcurves` except the transmitter and
+    receiver locations are not required (i.e. the provided transmitter HAAT
+    is used without modification).
     """
     def requires_terrain(self):
         return False

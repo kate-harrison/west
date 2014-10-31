@@ -2,15 +2,16 @@ from data_map import DataMap2D
 import numpy
 
 
-
 def calculate_cdf_from_datamap2d(data_map, weight_map=None, mask_map=None):
     """
-    Calculate a CDF of a data map given a corresponding (optional) weight map. If no weight map is given, equal weights
-    will be used.
+    Calculate a CDF of a data map given a corresponding (optional) weight map.
+    If no weight map is given, equal weights will be used.
 
-    A mask may be provided. Locations which are zero will not be included in the CDF.
+    A mask may be provided. Locations which are zero will not be included in the
+    CDF.
 
-    .. note:: Implementation is provided by `calculate_cdf_from_matrices`. This function is merely a convenient wrapper.
+    .. note:: Implementation is provided by `calculate_cdf_from_matrices`. This
+    function is merely a convenient wrapper.
 
     :param data_map:
     :type data_map: :class:`data_map.DataMap2D`
@@ -46,12 +47,14 @@ def calculate_cdf_from_datamap2d(data_map, weight_map=None, mask_map=None):
     return calculate_cdf_from_matrices(data_matrix, weight_matrix, mask_matrix)
 
 
-def calculate_cdf_from_matrices(data_matrix, weight_matrix=None, mask_matrix=None):
+def calculate_cdf_from_matrices(data_matrix, weight_matrix=None,
+                                mask_matrix=None):
     """
-    Calculate a CDF of a data matrix given a corresponding (optional) weight map. If no weight map is given, equal
-    weights will be used.
+    Calculate a CDF of a data matrix given a corresponding (optional) weight
+    map. If no weight map is given, equal weights will be used.
 
-    A mask may be provided. Elements which are zero will not be included in the CDF.
+    A mask may be provided. Elements which are zero will not be included in the
+    CDF.
 
     :param data_matrix:
     :type data_matrix: :class:`numpy.matrix`
@@ -70,17 +73,21 @@ def calculate_cdf_from_matrices(data_matrix, weight_matrix=None, mask_matrix=Non
     # With numpy, 0 = included after masking and 1 = masked, so flip this
     mask_matrix = numpy.logical_not(mask_matrix)
 
-    data_matrix_masked = numpy.ma.masked_array(data_matrix.astype(float), mask=mask_matrix)
-    weight_matrix_masked = numpy.ma.masked_array(weight_matrix.astype(float), mask=mask_matrix)
+    data_matrix_masked = numpy.ma.masked_array(data_matrix.astype(float),
+                                               mask=mask_matrix)
+    weight_matrix_masked = numpy.ma.masked_array(weight_matrix.astype(float),
+                                                 mask=mask_matrix)
 
-    data_array = data_matrix_masked.compressed()     # 1-D base array after removing masked elements
+    data_array = data_matrix_masked.compressed()     # 1-D base array after
+                                                     # removing masked elements
     if hasattr(data_array, "A1"):
         data_array = data_array.A1
     weight_array = weight_matrix_masked.compressed()
     if hasattr(weight_array, "A1"):
         weight_array = weight_array.A1
 
-    bad_indices = numpy.logical_or(numpy.isnan(data_array), numpy.isnan(weight_array))
+    bad_indices = numpy.logical_or(numpy.isnan(data_array), numpy.isnan(
+        weight_array))
     bad_indices = numpy.logical_or(bad_indices, numpy.isinf(data_array))
     bad_indices = numpy.logical_or(bad_indices, numpy.isinf(weight_array))
     data_array[bad_indices] = 0
@@ -98,7 +105,6 @@ def calculate_cdf_from_matrices(data_matrix, weight_matrix=None, mask_matrix=Non
 
     # Find the first element in cdfY which is greater than 0.5
     # The corresponding cdfX value will be the median
-    # median_index = numpy.where(cdfY >= 0.5)[0][0]
     median_index = numpy.argmax(cdfY >= 0.5)
     median = cdfX[median_index]
 

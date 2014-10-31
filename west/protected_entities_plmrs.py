@@ -4,6 +4,7 @@ from protected_entity_plmrs import ProtectedEntityPLMRS
 from protected_entities import ProtectedEntities
 import configuration
 
+
 class ProtectedEntitiesPLMRS(ProtectedEntities):
     """
     Intermediate class
@@ -16,7 +17,8 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
     """
 
     def source_filename(self):
-        base_directory = configuration.paths['UnitedStates']['protected_entities']
+        base_directory = configuration.paths['UnitedStates'][
+            'protected_entities']
         return os.path.join(base_directory, 'FromGoogle', 'plcmrs.csv')
 
     def source_name(self):
@@ -25,7 +27,9 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
 
     def get_max_protected_radius_km(self):
         """
-        See :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km` for more details.
+        See
+        :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`
+        for more details.
 
         :return: 150.0
         :rtype: float
@@ -40,9 +44,9 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
     # 'parent_facility_id': '', 'parent_callsign': ''}
 
 
-    # @doc_inherit
     def _load_entities(self):
-        self.log.debug("Loading PLMRS data from \"%s\" (%s)" % (str(self.source_filename()), str(self.source_name())))
+        self.log.debug("Loading PLMRS data from \"%s\" (%s)" % (str(
+            self.source_filename()), str(self.source_name())))
 
         with open(self.source_filename(), 'r') as f:
             plmrs_csv = csv.DictReader(f)
@@ -57,17 +61,20 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
 
                 description = plmrs_entry['uid']
 
-                new_plmrs_entry = ProtectedEntityPLMRS(self, self.get_mutable_region(), latitude, longitude, channel,
-                                                       is_metro, description)
+                new_plmrs_entry = ProtectedEntityPLMRS(self,
+                                                       self.get_mutable_region(),
+                                                       latitude, longitude,
+                                                       channel, is_metro,
+                                                       description)
                 self._add_entity(new_plmrs_entry)
 
     def _refresh_cached_data(self):
         self.log.debug("Categorizing entities by channel")
         self.entities_by_channel = {}
 
-        # Pre-allocate the channels so that an empty list is returned even if there
-        # are no stations on that channel. Stations which have a channel not in the
-        # list will not be added.
+        # Pre-allocate the channels so that an empty list is returned even if
+        # there are no stations on that channel. Stations which have a
+        # channel not in the list will not be added.
         for channel_number in self.region.get_channel_list():
             self.entities_by_channel[channel_number] = []
 
@@ -75,7 +82,8 @@ class ProtectedEntitiesPLMRSUnitedStatesFromGoogle(ProtectedEntitiesPLMRS):
             channel = entity.get_channel()
 
             if channel not in self.entities_by_channel:
-                self.log.warning("Detected a PLMRS entity on an unsupported channel: %d" % channel)
+                self.log.warning("Detected a PLMRS entity on an unsupported "
+                                 "channel: %d" % channel)
             else:
                 self.entities_by_channel[channel].append(entity)
 

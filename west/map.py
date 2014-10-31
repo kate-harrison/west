@@ -11,7 +11,7 @@ class Map(object):
     Plots an image of the given :class:`data_map.DataMap2D`.
     """
     title_font_size = 20
-    fontname = "Bitstream Vera Sans"    # Computer Modern is not installed
+    fontname = "Bitstream Vera Sans"
     colorbar_font_size = 16
 
     _label_num_decimals = 1
@@ -29,17 +29,17 @@ class Map(object):
         return numpy.expm1(data * numpy.log(base))
 
     def _transformation_atan(data, scale=20):
-        return numpy.arctan( data / scale) / (numpy.pi / 2)
+        return numpy.arctan(data / scale) / (numpy.pi / 2)
 
     def _transformation_inverse_atan(data, scale=20):
-        return numpy.tan( data * (numpy.pi / 2)) * scale
+        return numpy.tan(data * (numpy.pi / 2)) * scale
 
-    _transformation_dict = { "linear":  _transformation_linear,
-                             "log":     _transformation_log,
-                             "atan":    _transformation_atan}
-    _transformation_inverse_dict = { "linear":  _transformation_linear,
-                                     "log":     _transformation_inverse_log,
-                                     "atan":    _transformation_inverse_atan}
+    _transformation_dict = {"linear": _transformation_linear,
+                            "log": _transformation_log,
+                            "atan": _transformation_atan}
+    _transformation_inverse_dict = {"linear": _transformation_linear,
+                                    "log": _transformation_inverse_log,
+                                    "atan": _transformation_inverse_atan}
 
 
     def get_transformation(self, transformation_type):
@@ -56,20 +56,23 @@ class Map(object):
             self.log.warning("Defaulting to linear transformation for inverse")
             return Map._transformation_linear
 
-    def __init__(self, datamap2d, transformation="linear", is_in_region_map=None):
+    def __init__(self, datamap2d, transformation="linear",
+                 is_in_region_map=None):
         """
         Plots an image of the given :class:`data_map.DataMap2D`.
 
         :param datamap2d:
         :type datamap2d: :class:`data_map.DataMap2D`
-        :param transformation: the transformation to be applied to the data before plotting ("linear", "log", or "atan")
+        :param transformation: the transformation to be applied to the data \
+                before plotting ("linear", "log", or "atan")
         :type transformation: string
         :return: None
         """
         self.log = getModuleLogger(self)
 
         self._transformation = self.get_transformation(transformation)
-        self._transformation_inverse = self.get_transformation_inverse(transformation)
+        self._transformation_inverse = self.get_transformation_inverse(
+            transformation)
         self.log.debug("Using transformation %s" % str(self._transformation))
 
         self._datamap2d = datamap2d
@@ -93,30 +96,36 @@ class Map(object):
 
     def make_region_background_white(self, is_in_region_map):
         """
-        Sets the value for locations outside the region such that they will be plotted as white.
+        Sets the value for locations outside the region such that they will
+        be plotted as white.
 
         .. warning:: Not implemented yet.
 
-        :param is_in_region_map: map indicating which locations are in the region (1 = in region; 0 = not in region)
+        :param is_in_region_map: map indicating which locations are in the \
+                region (1 = in region; 0 = not in region)
         :type: :class:`data_map.DataMap2D`
         :return: None
         """
         if is_in_region_map is None:
-            self.log.debug("Cannot make region background white: no region map provided")
+            self.log.debug(
+                "Cannot make region background white: no region map provided")
             return
 
         from data_map import DataMap2D
+
         if not isinstance(is_in_region_map, DataMap2D):
-            raise TypeError("Expected the second argument to be of type DataMap2D")
+            raise TypeError(
+                "Expected the second argument to be of type DataMap2D")
 
         import numpy.ma as ma
+
         mask = 1.0 - is_in_region_map.get_matrix_copy()
         self._data = ma.masked_array(self._data, mask=mask)
 
     def set_data_max_value(self, threshold=None):
         """
-        Clamps values above the threshold at the threshold. This prevents out-of-bounds values from being plotted
-        as white due to the colormap.
+        Clamps values above the threshold at the threshold. This prevents
+        out-of-bounds values from being plotted as white due to the colormap.
 
         .. warning:: Not implemented yet.
 
@@ -130,12 +139,11 @@ class Map(object):
 
     def auto_clip_data(self, threshold=0.98):
         """
-        Clamps values above the threshold at the threshold. This prevents out-of-bounds values from being plotted
-        as white due to the colormap.
+        Clamps values above the threshold at the threshold. This prevents
+        out-of-bounds values from being plotted as white due to the colormap.
 
-        .. warning:: Not implemented yet.
-
-        :param threshold: value in [0, 1] specifying the fraction of the actual maximum to use as the threshold
+        :param threshold: value in [0, 1] specifying the fraction of the \
+                actual maximum to use as the threshold
         :type threshold: float
         :return: None
         """
@@ -152,7 +160,7 @@ class Map(object):
         """
         filename = filename or (str(datetime.datetime.utcnow()) + ".png")
         self.log.debug("Saving to filename %s" % filename)
-        self._canvas.print_png(filename)        # also accepts dpi= kwarg
+        self._canvas.print_png(filename)  # also accepts dpi= kwarg
 
     def _remove_axes(self):
         """
@@ -177,8 +185,9 @@ class Map(object):
 
     def _set_colormap(self):
         """
-        Sets the colormap to jet. Values that exceed the colormap's values will be plotted as white. Those that are
-        below the minimum will be plotted as black. "Bad" values (e.g. NaN) will be plotted as white.
+        Sets the colormap to jet. Values that exceed the colormap's values
+        will be plotted as white. Those that are below the minimum will be
+        plotted as black. "Bad" values (e.g. NaN) will be plotted as white.
         """
         cmap = matplotlib.cm.jet
         cmap.set_under('k')
@@ -197,12 +206,13 @@ class Map(object):
         if vmax is not None:
             vmax = self._transformation(vmax)
         else:
-            vmax = numpy.max(self._data)*1.01
+            vmax = numpy.max(self._data) * 1.01
         self._image.set_clim(vmin, vmax)
 
         return vmin, vmax
 
-    def add_colorbar(self, vmin=None, vmax=None, label=None, decimal_precision=None):
+    def add_colorbar(self, vmin=None, vmax=None, label=None,
+                     decimal_precision=None):
         """
         Add a colorbar to the plot.
 
@@ -230,10 +240,12 @@ class Map(object):
 
     def set_colorbar_ticks(self, locations, labels=None):
         """
-        Set specific ticks to be shown on the colorbar. Locations should be given in the same units as the original data
-        regardless of any transformation of the data done during mapping.
+        Set specific ticks to be shown on the colorbar. Locations should be
+        given in the same units as the original data regardless of any
+        transformation of the data done during mapping.
 
-        If `locations` is a scalar, 10 linearly spaced labels will be auto-generated between 0 and `locations`.
+        If `locations` is a scalar, 10 linearly spaced labels will be
+        auto-generated between 0 and `locations`.
 
         :param locations: list of values at which to place the ticks
         :type locations: list of floats
@@ -247,7 +259,9 @@ class Map(object):
         # In this mode, the input 'labels' is ignored
         if not isinstance(locations, list):
             max_transformed_location = self._transformation(locations)
-            transformed_locations_temp = numpy.linspace(0, max_transformed_location, 11)
+            transformed_locations_temp = numpy.linspace(0,
+                                                        max_transformed_location,
+                                                        11)
             locations = self._transformation_inverse(transformed_locations_temp)
             labels = None
 
@@ -285,18 +299,22 @@ class Map(object):
         """
         if self._colorbar is None:
             self.add_colorbar()
-        self._colorbar.set_label(label, fontsize=self.colorbar_font_size, fontname=self.fontname)
+        self._colorbar.set_label(label, fontsize=self.colorbar_font_size,
+                                 fontname=self.fontname)
 
     def set_title(self, title):
         """
-        Set the title of the plot with the given `title` string. Returns a handle to the title object.
+        Set the title of the plot with the given `title` string. Returns a
+        handle to the title object.
         """
-        return plt.title(title, fontsize=self.title_font_size, fontname=self.fontname)
+        return plt.title(title, fontsize=self.title_font_size,
+                         fontname=self.fontname)
 
     def set_boundary_color(self, new_color=None):
         """
         Set the color of the boundary line. See :meth:`add_boundary_outlines` and
-        http://matplotlib.org/api/artist_api.html#matplotlib.patches.Patch.set_color for more details.
+        http://matplotlib.org/api/artist_api.html#matplotlib.patches.Patch.set_color
+        for more details.
         """
         self._boundary_color = new_color or self._default_boundary_color
 
@@ -307,7 +325,8 @@ class Map(object):
     def set_boundary_linewidth(self, new_linewidth=None):
         """
         Set the width of the boundary line. See :meth:`add_boundary_outlines` and
-        http://matplotlib.org/api/artist_api.html#matplotlib.lines.Line2D.set_linewidth for more details.
+        http://matplotlib.org/api/artist_api.html#matplotlib.lines.Line2D.set_linewidth
+        for more details.
         """
         self._boundary_linewidth = new_linewidth or self._default_boundary_linewidth
 
@@ -317,8 +336,9 @@ class Map(object):
 
     def add_boundary_outlines(self, boundary):
         """
-        Add the specified boundary (a :class:`boundary.Boundary` object) to the plot as an outline. Color and linewidth
-        can be customized via :meth:`set_boundary_color` and :meth:`set_boundary_linewidth`.
+        Add the specified boundary (a :class:`boundary.Boundary` object) to
+        the plot as an outline. Color and linewidth can be customized via
+        :meth:`set_boundary_color` and :meth:`set_boundary_linewidth`.
         """
         color = self._boundary_color
         linewidth = self._boundary_linewidth
@@ -332,13 +352,17 @@ class Map(object):
         num_lon_divs = len(self._datamap2d.longitudes)
 
         def change_range(old_value, old_min, old_max, new_min, new_max):
-            return (((old_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min
+            return (((old_value - old_min) * (new_max - new_min)) / (
+            old_max - old_min)) + new_min
 
         for (lats, lons) in boundary.get_sets_of_exterior_coordinates():
-            new_lats = change_range(lats, map_min_lat, map_max_lat, 0, num_lat_divs-1)
-            new_lons = change_range(lons, map_min_lon, map_max_lon, 0, num_lon_divs-1)
+            new_lats = change_range(lats, map_min_lat, map_max_lat, 0,
+                                    num_lat_divs - 1)
+            new_lons = change_range(lons, map_min_lon, map_max_lon, 0,
+                                    num_lon_divs - 1)
 
-            new_plot = self._ax.plot(new_lons, new_lats, color, linewidth=linewidth)
+            new_plot = self._ax.plot(new_lons, new_lats, color,
+                                     linewidth=linewidth)
             self._boundary_plots.append(new_plot[0])
 
-        self._ax.axis([0, num_lon_divs-1, 0, num_lat_divs-1])
+        self._ax.axis([0, num_lon_divs - 1, 0, num_lat_divs - 1])

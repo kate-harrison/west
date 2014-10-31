@@ -11,11 +11,15 @@ protected_entities_directory_name = "ProtectedEntities"
 
 def add_paths_for_region(region_name):
     paths[region_name] = {}
-    region_base_dir = os.path.join(base_data_directory, region_directory_name, region_name)
+    region_base_dir = os.path.join(base_data_directory,
+                                   region_directory_name, region_name)
     paths[region_name]['base'] = region_base_dir
-    paths[region_name]['boundaries'] = os.path.join(region_base_dir, boundaries_directory_name)
-    paths[region_name]['protected_entities'] = os.path.join(region_base_dir, protected_entities_directory_name)
-    paths[region_name]['population'] = os.path.join(region_base_dir, "Population")
+    paths[region_name]['boundaries'] = os.path.join(region_base_dir,
+                                                    boundaries_directory_name)
+    paths[region_name]['protected_entities'] = os.path.join(region_base_dir,
+                                                            protected_entities_directory_name)
+    paths[region_name]['population'] = os.path.join(region_base_dir,
+                                                    "Population")
 
 
 paths = {}

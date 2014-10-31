@@ -5,7 +5,8 @@ import numpy
 import data_map
 
 
-class EqualDataEqualWeightsCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
+class EqualDataEqualWeightsCDFTestCase(
+    data_manipulation_test_base.AbstractCDFTestCase):
     def setUp(self):
         self.data_values = '1 1; 1 1'
         self.weight_values = '1 1; 1 1'
@@ -19,7 +20,8 @@ class EqualDataEqualWeightsCDFTestCase(data_manipulation_test_base.AbstractCDFTe
         self._make_cdf()
 
 
-class UnequalDataEqualWeightsCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
+class UnequalDataEqualWeightsCDFTestCase(
+    data_manipulation_test_base.AbstractCDFTestCase):
     def setUp(self):
         self.data_values = '4 1; 3 2'
         self.weight_values = '1 1; 1 1'
@@ -68,7 +70,8 @@ class NonbinaryMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
         self._make_cdf()
 
 
-class ZeroWeightedDataMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
+class ZeroWeightedDataMaskCDFTestCase(
+    data_manipulation_test_base.AbstractCDFTestCase):
     """
     Same data as :class:`MaskedDataCDFTestCase` but with non-binary mask values.
     """
@@ -86,7 +89,8 @@ class ZeroWeightedDataMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTes
         self._make_cdf()
 
 
-class WeightedDataMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
+class WeightedDataMaskCDFTestCase(
+    data_manipulation_test_base.AbstractCDFTestCase):
     """
     Using more realistic weights.
     """
@@ -96,7 +100,7 @@ class WeightedDataMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTestCas
         self.weight_values = '5 1; 1 1'
         self.mask_values = None
 
-        self.expected_average = 14.0/8      # = (5*1 + 2 + 3 + 4)/(5 + 1 + 1 + 1)
+        self.expected_average = 14.0/8     # = (5*1 + 2 + 3 + 4)/(5 + 1 + 1 + 1)
         self.expected_median = 1
         self.expected_cdfx = '1 2 3 4'
         self.expected_cdfy = '0.625 0.75 0.875 1'   # 5/8 6/8 7/8 8/8
@@ -119,7 +123,8 @@ class LargerDataCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
         self._make_cdf()
 
 
-class NanDataAndWeightsMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTestCase):
+class NanDataAndWeightsMaskCDFTestCase(
+    data_manipulation_test_base.AbstractCDFTestCase):
     """
     Using more realistic weights.
     """
@@ -137,7 +142,8 @@ class NanDataAndWeightsMaskCDFTestCase(data_manipulation_test_base.AbstractCDFTe
         self._make_cdf()
 
 
-class ComparableDataMapTestCase(data_manipulation_test_base.AbstractCDFTestCase):
+class ComparableDataMapTestCase(
+    data_manipulation_test_base.AbstractCDFTestCase):
 
     def setUp(self):
         test_data_map = data_map.DataMap2DBayArea.create(2, 3)
@@ -147,7 +153,8 @@ class ComparableDataMapTestCase(data_manipulation_test_base.AbstractCDFTestCase)
         test_weight_map.reset_all_values(1)
 
         self.cdfX, self.cdfY, self.average, self.median =\
-            data_manipulation.calculate_cdf_from_datamap2d(test_data_map, test_weight_map)
+            data_manipulation.calculate_cdf_from_datamap2d(test_data_map,
+                                                           test_weight_map)
 
         self.expected_average = 1
         self.expected_median = 1
@@ -157,7 +164,9 @@ class IncomparableDataMapTestCase(unittest.TestCase):
     def runTest(self):
         self.test_data_map = data_map.DataMap2DBayArea.create(2, 3)
         self.test_weight_map = data_map.DataMap2DWisconsin.create(2,3)
-        self.assertRaises(TypeError, data_manipulation.calculate_cdf_from_datamap2d, self.test_data_map,
+        self.assertRaises(TypeError,
+                          data_manipulation.calculate_cdf_from_datamap2d,
+                          self.test_data_map,
                           self.test_weight_map)
 
 
@@ -165,21 +174,25 @@ class NotDataMapTestCase(unittest.TestCase):
     def runTest(self):
         test_map = data_map.DataMap2DBayArea.create(2, 3)
         test_map.reset_all_values(1)
-        # test_weight_map = data_map.DataMap2DBayArea.create(2, 3)
-        # test_mask_map = data_map.DataMap2DBayArea.create(2, 3)
 
         bad_data_array =[1, [1, 2], numpy.matrix('1 2; 3 4'), None]
 
         for bad_data in bad_data_array:
-            self.assertRaises(TypeError, data_manipulation.calculate_cdf_from_datamap2d, data_map=bad_data,
+            self.assertRaises(TypeError,
+                              data_manipulation.calculate_cdf_from_datamap2d,
+                              data_map=bad_data,
                               weight_map=test_map,
                               mask_map=test_map)
             if bad_data is not None:
-                self.assertRaises(TypeError, data_manipulation.calculate_cdf_from_datamap2d, data_map=test_map,
+                self.assertRaises(TypeError,
+                                  data_manipulation.calculate_cdf_from_datamap2d,
+                                  data_map=test_map,
                                   weight_map=bad_data,
                                   mask_map=test_map)
             if bad_data is not None:
-                self.assertRaises(TypeError, data_manipulation.calculate_cdf_from_datamap2d, data_map=test_map,
+                self.assertRaises(TypeError,
+                                  data_manipulation.calculate_cdf_from_datamap2d,
+                                  data_map=test_map,
                                   weight_map=test_map,
                                   mask_map=bad_data)
 

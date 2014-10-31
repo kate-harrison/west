@@ -18,7 +18,8 @@ class ProtectedEntity(object):
         self.container = container
         if not isinstance(container, ProtectedEntities):
             # TODO: raise an exception?
-            self.log.error("Container is not a ProtectedEntities instance: got %s instead." % container.__class__.__name__)
+            self.log.error("Container is not a ProtectedEntities instance: "
+                           "got %s instead." % container.__class__.__name__)
 
         self._latitude = latitude
         self._longitude = longitude
@@ -94,14 +95,16 @@ class ProtectedEntity(object):
 
         :param kml: KML object to be modified
         :type kml: :class:`simplekml.Kml`
-        :return: the object describing this ProtectedEntity in the KML (e.g. for attribute modification)
+        :return: the object describing this ProtectedEntity in the KML (e.g. \
+                for attribute modification)
         :rtype: :class:`simplekml.Point` or :class:`simplekml.Polygon`
         """
         return
 
     def _create_bounding_box(self):
         """
-        Generate a bounding box for the ProtectedEntity. The width and height are set by
+        Generate a bounding box for the ProtectedEntity. The width and height
+        are set by
         :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`.
         """
         bb = {'min_lat': float('inf'),
@@ -127,20 +130,23 @@ class ProtectedEntity(object):
 
     def get_bounding_box(self):
         """
-        Retrieve the bounding box for the ProtectedEntity. See :meth:`location_in_bounding_box` for more details.
+        Retrieve the bounding box for the ProtectedEntity. See
+        :meth:`location_in_bounding_box` for more details.
 
-        A bounding box is a dictionary with four keys: min_lat, max_lat, min_lon, max_lon. Each will give a coordinate
-        in decimal degrees.
+        A bounding box is a dictionary with four keys: min_lat, max_lat,
+        min_lon, max_lon. Each will give a coordinate in decimal degrees.
         """
         return self._protected_bounding_box
 
     def location_in_bounding_box(self, location):
         """
-        Helper function to quickly identify if the ProtectedEntity is potentially protected. This function is faster
-        than an actual protection test because it compares a few floats rather than computing distance, (potentially)
-        propagation, etc.
+        Helper function to quickly identify if the ProtectedEntity is
+        potentially protected. This function is faster than an actual
+        protection test because it compares a few floats rather than
+        computing distance, (potentially) propagation, etc.
 
-        The width and height are set by :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`.
+        The width and height are set by
+        :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`.
 
         :param location: (latitude, longitude) in decimal degrees
         :type location: tuple of floats
@@ -149,4 +155,5 @@ class ProtectedEntity(object):
         """
         (lat, lon) = location
         bb = self.get_bounding_box()
-        return (bb['min_lat'] <= lat <= bb['max_lat']) and (bb['min_lon'] <= lon <= bb['max_lon'])
+        return (bb['min_lat'] <= lat <= bb['max_lat']) and (bb['min_lon'] <=
+                                                            lon <= bb['max_lon'])

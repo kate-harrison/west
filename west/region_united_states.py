@@ -1,41 +1,35 @@
 from region import Region
-# from doc_inherit import doc_inherit
-#from boundary import BoundaryContinentalUnitedStates
 import boundary
 import protected_entities_tv_stations
 import protected_entities_plmrs
 import protected_entities_radio_astronomy_sites
 
 class RegionUnitedStates(Region):
-    """US region"""
-
-    # def __init__(self, *args, **kwargs):
-    #     super(RegionUnitedStates, self).__init__(*args, **kwargs)
-    #     self._load_population()
-    #     self._load_terrain()
-    #     self._load_boundary()
-    #     self._load_economic_data()
-
+    """United States region"""
 
     # If the device's height is not specified, this height will be used.
     default_device_haat_meters = 10
 
-    # @doc_inherit
     def _get_boundary_class(self):
         return boundary.BoundaryContinentalUnitedStates
 
-    # @doc_inherit
     def _load_protected_entities(self):
-        self.protected_entities[protected_entities_tv_stations.ProtectedEntitiesTVStations] = \
-            protected_entities_tv_stations.ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(self)
+        self.protected_entities[
+            protected_entities_tv_stations.ProtectedEntitiesTVStations] = \
+            protected_entities_tv_stations\
+                .ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(self)
 
-        self.protected_entities[protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
-            protected_entities_plmrs.ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self)
+        self.protected_entities[
+            protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
+            protected_entities_plmrs\
+                .ProtectedEntitiesPLMRSUnitedStatesFromGoogle(self)
 
-        self.protected_entities[protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySites] = \
-            protected_entities_radio_astronomy_sites.ProtectedEntitiesRadioAstronomySitesUnitedStates(self)
+        self.protected_entities[
+            protected_entities_radio_astronomy_sites
+                .ProtectedEntitiesRadioAstronomySites] = \
+            protected_entities_radio_astronomy_sites\
+                .ProtectedEntitiesRadioAstronomySitesUnitedStates(self)
 
-    # @doc_inherit
     def get_frequency_bounds(self, channel):
         if channel in [2, 3, 4]:
             low = (channel - 2) * 6 + 54
@@ -51,25 +45,20 @@ class RegionUnitedStates(Region):
             high = (channel - 14) * 6 + 476
         else:
             raise ValueError("Invalid channel number: %d" % channel)
-        return (low, high)
+        return low, high
 
-    # @doc_inherit
     def get_tvws_channel_list(self):
-        # TODO: move to ruleset?
         # 2, 5-36, 38-51
         return [2] + range(5, 37) + range(38, 52)
 
-    # @doc_inherit
     def get_portable_tvws_channel_list(self):
         # 21-36, 38-51
         return range(21, 37) + range(38, 52)
 
-    # @doc_inherit
     def get_channel_list(self):
         # 2-51
         return range(2, 52)
 
-    # @doc_inherit
     def get_channel_width(self):
         return 6e6
 
