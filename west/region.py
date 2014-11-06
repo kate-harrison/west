@@ -15,11 +15,6 @@ class Region(object):
         self.protected_entities = {}
         self._load_protected_entities()
 
-        self._load_population()
-        self._load_terrain()
-        # self._load_boundary()
-        self._load_economic_data()
-
     def location_is_in_region(self, location):
         """Returns True if the location is within the region and False
         otherwise."""
