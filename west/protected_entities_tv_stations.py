@@ -181,7 +181,7 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(
                                                        lon_sec) * -1
 
                     channel = int(station['channel'])
-                    ERP = float(station['erp'])  # in kW
+                    ERP_kW = float(station['erp'])  # in kW
                     haat = float(station['haat'])  # in meters
                 except Exception as e:
                     self.log.error("Error loading station: ", str(e))
@@ -192,7 +192,7 @@ class ProtectedEntitiesTVStationsUnitedStatesIncentiveAuctionBaseline2014May20(
                                                        latitude=latitude,
                                                        longitude=longitude,
                                                        channel=channel,
-                                                       ERP_Watts=ERP,
+                                                       ERP_Watts=ERP_kW*1e3,
                                                        HAAT_meters=haat,
                                                        tx_type=tx_type)
 
