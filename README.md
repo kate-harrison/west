@@ -69,6 +69,7 @@ documentation at ```$REPO_ROOT/documentation/_build/html/index.html```.
 4. *Outside* of the repository, use ```import west``` to import the module. 
 Working inside the repository may compromise your ability to generate 
 documentation.
+5. Look at the code samples in the ```examples/``` directory for next steps.
 
 
 Overview
