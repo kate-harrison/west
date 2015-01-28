@@ -56,7 +56,7 @@ class Region(object):
         elif use_fallthrough_if_not_found:
             self.log.info("Using fallthrough protected entity for type %s" %
                           protected_entities_type)
-            return ProtectedEntitiesDummy(None, None)
+            return ProtectedEntitiesDummy(self)
         else:
             raise TypeError("The specified type (%s) does not exist in this "
                             "Region's set of protected entities."
