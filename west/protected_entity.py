@@ -101,11 +101,11 @@ class ProtectedEntity(object):
         """
         return
 
-    def _create_bounding_box(self):
+    def _create_bounding_box(self, override_max_protected_radius_km=None):
         """
-        Generate a bounding box for the ProtectedEntity. The width and height
-        are set by
-        :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`.
+        Generate a bounding box for the ProtectedEntity. The width is set by
+        :meth:`protected_entities.ProtectedEntities.get_max_protected_radius_km`
+        but can be overridden with ``override_max_protected_radius_km``.
         """
         bb = {'min_lat': float('inf'),
               'max_lat': -float('inf'),
@@ -113,9 +113,13 @@ class ProtectedEntity(object):
               'max_lon': -float('inf')
              }
 
+        width_km = override_max_protected_radius_km or \
+                   self.container.get_max_protected_radius_km()
+
         location = Point(self._latitude, self._longitude)
         for bearing in [0, 90, 180, 270, 360]:
-            destination = VincentyDistance(kilometers=self.container.get_max_protected_radius_km()).destination(location, bearing)
+            destination = VincentyDistance(kilometers=width_km).destination(
+                location, bearing)
             lat, lon = destination.latitude, destination.longitude
             if lat < bb['min_lat']:
                 bb['min_lat'] = lat
