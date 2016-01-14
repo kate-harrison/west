@@ -3,6 +3,7 @@ import boundary
 import protected_entities_tv_stations
 import protected_entities_plmrs
 import protected_entities_radio_astronomy_sites
+from protected_entities import ProtectedEntitiesDummy
 
 class RegionUnitedStates(Region):
     """United States region"""
@@ -62,3 +63,22 @@ class RegionUnitedStates(Region):
     def get_channel_width(self):
         return 6e6
 
+
+class RegionUnitedStatesTvOnly(RegionUnitedStates):
+    """A descendant of :class:`RegionUnitedStates` which has only TV stations as
+    its protected entities."""
+
+    def _load_protected_entities(self):
+        self.protected_entities[
+            protected_entities_tv_stations.ProtectedEntitiesTVStations] = \
+            protected_entities_tv_stations \
+                .ProtectedEntitiesTVStationsUnitedStatesTVQuery2014June17(self)
+
+        self.protected_entities[
+            protected_entities_plmrs.ProtectedEntitiesPLMRS] = \
+            ProtectedEntitiesDummy(self)
+
+        self.protected_entities[
+            protected_entities_radio_astronomy_sites
+                .ProtectedEntitiesRadioAstronomySites] = \
+            ProtectedEntitiesDummy(self)
