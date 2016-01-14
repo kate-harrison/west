@@ -918,7 +918,7 @@ class RulesetFcc2012(Ruleset):
             viewable."""
             if not is_in_region_datamap2d.get_value_by_index(latitude_index,
                                                              longitude_index):
-                return False        # outside of the US is defined as not viewable
+                return False        # outside of the region is defined as not viewable
             if currently_viewable:
                 return None         # don't update if it is already known that TV is viewable at this location
 
